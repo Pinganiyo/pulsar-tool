@@ -60,7 +60,10 @@ In progress:
 
 - [ ] **Client profile after a mid-session regroup** (0.4.0 item, started early). Found one cause: when the local profile file was missing, the post-bridge restore was skipped entirely and the restore lock was left set for the session. Fixed in code, **not yet tested in game**.
 - [ ] **Space station / POI divergence.** Traced: short in-system cruises intentionally skip the host save resync (always resyncing crashed the client), so the client builds its own station and POI content. No fix yet; next step is detecting the divergence and triggering the existing F8 regroup automatically.
-- [ ] Two-player test setup and test checklist.
+- [ ] **Stuck gravity after a station / space transition.** No direct cause found yet. Fixed a related hazard: the space-flight sync kept pointers to ship physics bodies across save loads (which free them) and kept writing through them. They are now cleared on every save receipt. **Not yet tested in game.**
+- [ ] **HUD message per restored item.** The upstream code already adds restored items silently; this needs an in-game check to confirm whether the issue is gone (removals may still show messages).
+- [x] Two-player test checklist: [docs/TESTING.md](docs/TESTING.md).
+- [ ] First two-player test session on the supported configuration.
 
 Known issues are unchanged from upstream except where noted above; see
 [What does not work](#what-does-not-work) and [docs/OVERVIEW.md](docs/OVERVIEW.md).
