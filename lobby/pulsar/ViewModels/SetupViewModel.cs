@@ -136,14 +136,9 @@ public partial class SetupViewModel : ViewModelBase
             InstallStatus = "Close Starfield first, then install.";
             return;
         }
-        // SFSE is required and we cannot ship it (licence). Make sure it is there first,
-        // otherwise installing the DLL is pointless - point the user to the SFSE row's link.
-        if (!File.Exists(Path.Combine(GameRoot!, "sfse_loader.exe")))
-        {
-            InstallStatus = "SFSE is not installed. Get it first (see the SFSE row below), then click Install mod.";
-            RunChecks();
-            return;
-        }
+        // SFSE (sfse_loader.exe) is required at runtime to inject the DLL into the game process.
+        // We allow installing the mod files regardless so the game Data folder is prepared;
+        // the SFSE check row below still flags it as missing.
         var src = ModInstaller.FindModDataDir();
         if (src == null)
         {
@@ -157,7 +152,7 @@ public partial class SetupViewModel : ViewModelBase
             FixAll();   // applies loose-files / alt-tab / force-load ini settings + re-checks (sets AllGood)
             InstallStatus = AllGood
                 ? res.Message + " Game settings applied. You are ready to play."
-                : res.Message + " Settings applied - check the remaining items below (e.g. Address Library).";
+                : res.Message + " Settings applied - check the remaining items below (e.g. SFSE, Address Library).";
         }
         else
         {
