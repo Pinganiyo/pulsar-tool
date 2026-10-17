@@ -1,6 +1,82 @@
-# PULSAR
+# PULSAR Revived
 
-## I am not developing this any more, and it is open for anyone to take over
+**A modified fork of PULSAR, the two-player co-op mod for Starfield.**
+
+> Based on PULSAR by ramisotti13-eng
+> https://github.com/ramisotti13-eng/pulsar
+> (source repository: https://github.com/ramisotti13-eng/pulsar-tool)
+
+This is **not** the original PULSAR. It is a continuation of it, picked up after
+the original author stopped development and invited anyone to take it over.
+All the credit for the architecture, the reverse engineering and the existing
+feature set goes to ramisotti13-eng and to everyone who tested the original
+alpha. This fork's changes are listed in [Changes in this fork](#changes-in-this-fork)
+and in the git history.
+
+"PULSAR Revived" is a working name and may change. Under the original's
+[additional license terms](LICENSE-ADDITIONAL) this fork must not be called
+plainly "PULSAR", must keep the attribution above, and must be marked as
+modified.
+
+**This page is a living document.** The plan and the status below are updated
+as work lands.
+
+## The goal
+
+Turn the 0.3.0 alpha into a co-op mod two people can play through Starfield
+with, without constantly working around it. Reliability first, completeness
+second, polish third.
+
+Scope is deliberately narrow: **two players, Starfield 1.16.244 on Steam, with
+SFSE.** More players, a dedicated server, or compatibility with every other mod
+are not goals.
+
+## Roadmap
+
+These are milestones, not dates. Some single bugs may take longer than a whole
+milestone.
+
+| Version | Theme | What it means |
+| --- | --- | --- |
+| **0.3.1** | Stabilize | A clean, reproducible build. A repeatable two-player test setup. Better logs and connection errors, so failures can be diagnosed. |
+| **0.4.0** | Core fixes | Fix space station / POI divergence. Restore the client's own character after every regroup and world transition. Fix ghost equipment and stuck gravity. Disconnect / reconnect recovery. |
+| **0.5.0** | Gameplay | Fix the shared-vehicle crash, or disable shared riding with a clear warning. Verify combat, deaths, revives, loot, inventory, doors, containers, NPCs, quests and cell transitions. No soft-locks. |
+| **0.6.0** | Completeness | Revisit equipment sync and its animation-graph crash, corpse loot sync, host-authoritative NPC firing, long sessions and progression across saves. |
+| **0.7.0** | Playable | A defined, substantial campaign route completed by two players with no reproducible crash or progression-blocking bug. Remaining cosmetic issues documented. |
+| **1.0.0** | Stable | Reliable install/update/uninstall, connectivity, no known critical defects in the supported configuration, regression tests, a release process and a troubleshooting guide. |
+
+## Where we are
+
+**Current target: 0.3.1 (Stabilize).** Starting point: upstream Alpha 0.3.0.
+
+Done:
+
+- [x] Full build verified on a clean machine: `PULSAR.dll`, `Pulsar.exe`, `PulsarCompanion.exe`; companion tests pass (11/11).
+- [x] CommonLibSF submodule is now actually recorded (pinned to `0fdb49d`, the revision the patch applies to). Upstream only had a `.gitmodules` entry, so fresh clones could not build.
+- [x] Build guide covers Visual Studio 2022 as well as 2026.
+- [x] Tool: broader detection of the game folder and of the mod data in a dev checkout; the mod can be installed before SFSE is present (the SFSE check still flags it).
+
+In progress:
+
+- [ ] **Client profile after a mid-session regroup** (0.4.0 item, started early). Found one cause: when the local profile file was missing, the post-bridge restore was skipped entirely and the restore lock was left set for the session. Fixed in code, **not yet tested in game**.
+- [ ] **Space station / POI divergence.** Traced: short in-system cruises intentionally skip the host save resync (always resyncing crashed the client), so the client builds its own station and POI content. No fix yet; next step is detecting the divergence and triggering the existing F8 regroup automatically.
+- [ ] Two-player test setup and test checklist.
+
+Known issues are unchanged from upstream except where noted above; see
+[What does not work](#what-does-not-work) and [docs/OVERVIEW.md](docs/OVERVIEW.md).
+
+## Changes in this fork
+
+Tracked in the git history from commit `e6002ef` onward. Everything up to and
+including `48f58d3` is the original PULSAR.
+
+---
+
+## Original PULSAR README
+
+Kept as the original author wrote it. Statements in the first person are theirs.
+
+### I am not developing this any more, and it is open for anyone to take over
 
 I ran out of time to continue PULSAR. Rather than let it go quiet and
 disappear, I have published everything.
@@ -22,7 +98,7 @@ If you want to pick it up, start at [BUILD.md](BUILD.md) and
 
 Co-op multiplayer for Starfield. Play through the game together with a friend.
 
-## Status for players
+### Status for players
 
 You can still download and play it. The release on this page works.
 
@@ -46,14 +122,14 @@ doing, because it leaves a record for whoever continues the project, but please
 do not wait on a reply. Most known problems are already listed further down and
 in [docs/OVERVIEW.md](docs/OVERVIEW.md).
 
-## What you need
+### What you need
 
 * **Starfield, the Steam version.** The mod loads through SFSE, which only supports Steam. The Game Pass and Microsoft Store version is not supported, and the mod will never run on consoles.
 * **Starfield 1.16.244.** The plugin resolves engine functions by address, and those addresses are tied to the exact game version. A game update breaks the mod until someone re-resolves them.
 * **SFSE (Starfield Script Extender)**: https://sfse.silverlock.org/
 * Windows. A friend with the same setup.
 
-## Install
+### Install
 
 The mod itself is one click. It is bundled inside the tool, so you never download mod files separately and you never copy anything by hand. The only thing you set up yourself is SFSE.
 
@@ -63,7 +139,7 @@ The mod itself is one click. It is bundled inside the tool, so you never downloa
 
 Close Starfield before installing or updating.
 
-## Play together
+### Play together
 
 Both players run the game through the tool, and **both have to be in game with a save loaded** (not sitting in the main menu) for the connection to work.
 
@@ -80,7 +156,7 @@ Tip: press **F8** in game to regroup at the host after a fast travel, or any tim
 
 For a private game without the lobby, use **Play directly**: the host shares an IP and port, and the other joins by IP (over the internet you also forward that port on your router).
 
-## Good to know
+### Good to know
 
 A few things that look like problems but usually are not:
 
@@ -91,14 +167,14 @@ A few things that look like problems but usually are not:
 * **The first time someone enters a vehicle, the game shows a short tutorial popup.** That popup is local to whoever entered, so the other player will not see it. That is normal.
 * **If the tool shows offline, use Reconnect** on the Co-op page. A relay can hiccup for a moment.
 
-## Other mods
+### Other mods
 
 PULSAR was never tested alongside other mods. It is technically possible to run
 them together, so you are welcome to try, but expect that some combinations will
 not work. If something breaks, try again with only PULSAR active before you
 conclude it is a PULSAR problem.
 
-## What works
+### What works
 
 * **2 player co-op.** More is not supported: the engine does not run headless and the networking is built around a single peer. Four players might be reachable with real work, a large server is not. The reasoning is in [docs/OVERVIEW.md](docs/OVERVIEW.md).
 * **Host and join by a short code**, or connect directly by IP for LAN and direct play.
@@ -112,7 +188,7 @@ conclude it is a PULSAR problem.
 * **Encrypted connection.** All co-op traffic is encrypted peer to peer, and relays mean you usually do not need to forward a port. The lobby only does matchmaking and never sees game data.
 * **Character backup.** Export and import your character to a file, and reset it from Settings whenever you want.
 
-## What does not work
+### What does not work
 
 Stated plainly, because you will run into these:
 
@@ -125,7 +201,7 @@ Stated plainly, because you will run into these:
 
 The full list, cosmetic issues included, is in [docs/OVERVIEW.md](docs/OVERVIEW.md).
 
-## Host your own relay (optional, advanced)
+### Host your own relay (optional, advanced)
 
 A relay just passes traffic between two players when a direct connection is hard. The tool picks one from the public list automatically, so you do not need your own while public relays are registered. The official one is funded until the end of 2026; after that, a community relay is what keeps NAT-blocked players connecting.
 
@@ -133,7 +209,7 @@ You might want your own as a private relay for your group, or to serve a region 
 
 A relay only forwards traffic. It never loads your save or touches your character, and because the connection is encrypted it only ever sees encrypted bytes.
 
-## Running your own lobby
+### Running your own lobby
 
 The lobby backend is in this repository too, under `lobby/server` and
 `lobby/deploy`. No lobby address is compiled into the tool: it reads one from a
@@ -144,7 +220,7 @@ official lobby goes offline at the end of 2026. See [BUILD.md](BUILD.md).
 `lobby/deploy` contains a working Caddy and Docker Compose setup, so standing up
 a replacement is a deployment job rather than a development one.
 
-## Source, license, contributing
+### Source, license, contributing
 
 Everything is here: the SFSE plugin (`src/`, `include/`), the tool
 (`lobby/pulsar`), the companion daemon (`lobby/companion`), the relay
@@ -163,7 +239,7 @@ included.
 
 Third-party components are listed in [THIRD-PARTY.md](THIRD-PARTY.md).
 
-## Disclaimer
+### Disclaimer
 
 Not affiliated with, endorsed by, or connected to Bethesda Softworks or ZeniMax.
 Starfield is their trademark. This repository contains no Bethesda assets.
