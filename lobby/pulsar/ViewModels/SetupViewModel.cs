@@ -142,7 +142,7 @@ public partial class SetupViewModel : ViewModelBase
         var src = ModInstaller.FindModDataDir();
         if (src == null)
         {
-            InstallStatus = "Mod files not found next to the tool. Extract the whole PULSAR package so the 'mod' folder sits next to Pulsar.exe.";
+            InstallStatus = "Mod files not found next to the tool. Extract the whole PULSAR package so the 'mod' folder sits next to Pulsar.exe, or run the tool from inside a PULSAR source checkout.";
             return;
         }
         var res = ModInstaller.Install(src, GameData!);
