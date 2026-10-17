@@ -478,6 +478,9 @@ public sealed class DaemonBridge : IDisposable
 
     public static string GuessStarfieldExe()
     {
+        var found = GameLocator.FindStarfield();
+        if (!string.IsNullOrEmpty(found) && File.Exists(found)) return found;
+
         foreach (var p in new[]
         {
             @"<Starfield>\sfse_loader.exe",

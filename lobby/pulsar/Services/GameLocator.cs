@@ -44,19 +44,71 @@ public static class GameLocator
 
     private static IEnumerable<string> Collect()
     {
+        // 1. Environment variable overrides (useful for Linux, Proton/Wine, custom setups)
+        foreach (var envVar in new[] { "STARFIELD_PATH", "STARFIELD_DIR", "STARFIELD_ROOT", "GAME_DIR" })
+        {
+            var val = Environment.GetEnvironmentVariable(envVar)?.Trim();
+            if (!string.IsNullOrEmpty(val))
+            {
+                if (File.Exists(val))
+                    val = Path.GetDirectoryName(val);
+                if (!string.IsNullOrEmpty(val) && SafeDirExists(val))
+                    yield return val;
+            }
+        }
+
+        // 2. User profile Games folders (e.g. C:\Users\<user>\Games\Starfield*)
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(userProfile))
+        {
+            var userGames = Path.Combine(userProfile, "Games");
+            foreach (var sfDir in FindStarfieldSubdirs(userGames))
+                yield return sfDir;
+        }
+
+        // 3. Fixed drives common paths (e.g. D:\Games\Starfield*, C:\Games\Starfield*)
+        foreach (var drive in FixedDrives())
+        {
+            var driveGames = Path.Combine(drive, "Games");
+            foreach (var sfDir in FindStarfieldSubdirs(driveGames))
+                yield return sfDir;
+
+            yield return Path.Combine(drive, "Games", "Starfield");
+            yield return Path.Combine(drive, "SteamLibrary", "steamapps", "common", "Starfield");
+            yield return Path.Combine(drive, "Steam", "steamapps", "common", "Starfield");
+        }
+
+        // 4. Linux / Wine / Heroic / Lutris paths
+        if (!OperatingSystem.IsWindows() || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINEPREFIX")))
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrEmpty(home))
+            {
+                yield return Path.Combine(home, ".wine", "drive_c", "Games", "Starfield");
+                yield return Path.Combine(home, "Games", "Heroic", "Starfield");
+                yield return Path.Combine(home, "Games", "Starfield");
+            }
+        }
+
+        // 5. Steam roots (parsed from libraryfolders.vdf)
         foreach (var steam in SteamRoots())
         {
             yield return Path.Combine(steam, "steamapps", "common", "Starfield");
             foreach (var lib in SteamLibraries(steam))
                 yield return Path.Combine(lib, "steamapps", "common", "Starfield");
         }
-        foreach (var drive in FixedDrives())
-        {
-            yield return Path.Combine(drive, "Games", "Starfield");
-            yield return Path.Combine(drive, "SteamLibrary", "steamapps", "common", "Starfield");
-            yield return Path.Combine(drive, "Steam", "steamapps", "common", "Starfield");
-        }
     }
+
+    private static IEnumerable<string> FindStarfieldSubdirs(string parentDir)
+    {
+        if (!SafeDirExists(parentDir)) yield break;
+        string[] matches;
+        try { matches = Directory.GetDirectories(parentDir, "*Starfield*", SearchOption.TopDirectoryOnly); }
+        catch { yield break; }
+        foreach (var dir in matches)
+            yield return dir;
+    }
+
 
     private static IEnumerable<string> SteamRoots()
     {

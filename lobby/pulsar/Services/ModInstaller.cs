@@ -24,12 +24,29 @@ public static class ModInstaller
             Path.Combine(exeDir, "mod", "Data"),     // released package layout
             Path.Combine(exeDir, "Data"),            // flattened payload
             Path.Combine(exeDir, "..", "mod", "Data"),
+            Path.Combine(exeDir, "..", "..", "..", "..", "data"), // repo data dir
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "data"),
+            Path.Combine(AppContext.BaseDirectory, "mod", "Data"),
         };
         foreach (var c in candidates)
         {
             try { if (Directory.Exists(c) && HasModFiles(c)) return Path.GetFullPath(c); }
             catch { /* ignore malformed candidate */ }
         }
+
+        // Walk up from exeDir searching for a data folder containing PULSAR.esp
+        try
+        {
+            var cur = new DirectoryInfo(exeDir);
+            for (int i = 0; i < 5 && cur != null; i++, cur = cur.Parent)
+            {
+                var candidate = Path.Combine(cur.FullName, "data");
+                if (Directory.Exists(candidate) && HasModFiles(candidate))
+                    return Path.GetFullPath(candidate);
+            }
+        }
+        catch { }
+
         return null;
     }
 

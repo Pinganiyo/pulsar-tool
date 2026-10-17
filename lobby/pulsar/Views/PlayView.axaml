@@ -60,7 +60,7 @@
                                  Watermark="Found automatically. Use Detect or Browse if empty." />
                         <Button Grid.Column="1" Margin="8,0,0,0"
                                 Content="Detect"
-                                ToolTip.Tip="Search Steam libraries and common folders for Starfield"
+                                ToolTip.Tip="Search common folders, user games, and library paths for Starfield"
                                 Command="{Binding AutoDetectCommand}" />
                         <Button Grid.Column="2" Margin="8,0,0,0"
                                 Content="Browse..."
