@@ -8,6 +8,7 @@
 #include "RemotePlayer/RemotePlayerManager.h"
 #include "SpaceSync/DockSync.h"
 #include "SpaceSync/FastTravelSync.h"
+#include "SpaceSync/FlightSync.h"
 #include "HookGuard.h"
 #include "InventorySync/InventorySync.h"
 #include "InventorySync/DirectRestore.h"
@@ -543,6 +544,9 @@ namespace Pulsar::WorldSync {
         // memory → ACCESS VIOLATION post-load (V13g 2nd-jump test).
         // FindSpawnedActor will re-resolve them after the save loaded.
         Pulsar::RemotePlayer::GetRemotePlayerManager().ClearStaleClonePtrs();
+        // Same for FlightSync's cached ship / NPC-ship Havok bodies, which the
+        // tick body-commit writes through.
+        Pulsar::FlightSync::ResetBodyCache();
     }
 
     // ─── L.7 Pre-load snapshot implementation ────────────────────

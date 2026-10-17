@@ -4244,6 +4244,30 @@ bool IsPostLoadUnseatInProgress()
     return g_unseatInProgress.load(std::memory_order_acquire);
 }
 
+void ResetBodyCache()
+{
+    // A save-bridge load destroys every Havok body. The cached ship body,
+    // the vt[8] apply body and the local NPC-ship bodies would otherwise
+    // keep pointing at freed memory until something re-acquired them, and
+    // the tick body-commit writes a transform through them. If the memory
+    // is reused by a body of the same controller type the vtable guard in
+    // SafeCommitHavokTransform does not catch it. Drop them; the sticky
+    // matcher and the vt[8] hook re-acquire fresh ones after the load.
+    g_playerBhkBody.store(nullptr, std::memory_order_release);
+    g_psMatchBestBody.store(nullptr, std::memory_order_release);
+    g_psMatchBestD2.store(3.4e38f, std::memory_order_release);
+    g_psStickyHeld.store(false, std::memory_order_release);
+    g_psStickyMiss.store(0, std::memory_order_release);
+    g_iter13CachedApplyBody.store(nullptr, std::memory_order_release);
+    g_iter13CachedApplyBodyMs.store(0, std::memory_order_release);
+    g_pendingShipTransform.armed.store(false, std::memory_order_release);
+    {
+        std::lock_guard lk(g_npcLocalBodiesMtx);
+        for (auto& b : g_npcLocalBodies) b = NpcLocalBody{};
+    }
+    PLOG_INFO("[PULSAR] FlightSync: body cache reset for save-bridge load"sv);
+}
+
 void Init()
 {
     // Hook the ShipHudDataModel constructor.

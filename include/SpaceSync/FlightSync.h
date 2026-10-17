@@ -33,4 +33,8 @@ void OnPacketReceived(const std::uint8_t* data, std::size_t length);
 // player back and we get an infinite push/snap loop.
 bool IsPostLoadUnseatInProgress();
 
+// Drop every cached Havok body pointer. Called on save receipt, before the
+// bridge load frees the bodies they point at.
+void ResetBodyCache();
+
 }  // namespace Pulsar::FlightSync
