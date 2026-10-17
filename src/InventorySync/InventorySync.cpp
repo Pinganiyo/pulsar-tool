@@ -1437,29 +1437,37 @@ namespace Pulsar::InventorySync
 
             std::vector<std::uint8_t> blob;
             std::string path;
+            bool haveBlob = false;
             {
                 std::lock_guard io(s_ioMu);
                 path = ProfilePath();
-                if (!ReadProfileFile(blob, path)) {
-                    PLOG_INFO(
-                        "[PULSAR] [InventorySync] apply: no profile at {} "
-                        "(first MP connect - current state will be snapshotted on disconnect)"sv,
-                        path);
-                    return;
-                }
+                haveBlob = ReadProfileFile(blob, path);
             }
 
-            auto* form = static_cast<RE::TESForm*>(player);
-            const std::uint32_t fid = form->formID;
+            // A missing profile file (first MP connect, or the pre-bridge
+            // DoSnapshot skipped because the player had no cell yet) only
+            // skips the M.3 blob chain. It must NOT skip the DirectRestore
+            // pass below: returning here used to leave the client on the
+            // host's bridged loadout and kept the bridge LockCache set, which
+            // froze captures for the rest of the session.
+            if (haveBlob) {
+                auto* form = static_cast<RE::TESForm*>(player);
+                const std::uint32_t fid = form->formID;
 
-            // 3-call chain (LoadGame zeros, FinishLoadGame parses TLV chunks,
-            // InitLoadGame reactivates). Forms::DeserializeForm only does
-            // the LoadGame zero - insufficient for real state restore.
-            const bool ok = ApplyBlobToForm(form, blob.data(), blob.size());
+                // 3-call chain (LoadGame zeros, FinishLoadGame parses TLV chunks,
+                // InitLoadGame reactivates). Forms::DeserializeForm only does
+                // the LoadGame zero - insufficient for real state restore.
+                const bool ok = ApplyBlobToForm(form, blob.data(), blob.size());
 
-            PLOG_INFO(
-                "[PULSAR] [InventorySync] apply: 0x{:08X} ← {}B from {} → {}"sv,
-                fid, blob.size(), path, ok ? "ok" : "FAILED");
+                PLOG_INFO(
+                    "[PULSAR] [InventorySync] apply: 0x{:08X} ← {}B from {} → {}"sv,
+                    fid, blob.size(), path, ok ? "ok" : "FAILED");
+            } else {
+                PLOG_INFO(
+                    "[PULSAR] [InventorySync] apply: no profile at {} - skipping blob "
+                    "chain, DirectRestore still runs"sv,
+                    path);
+            }
 
             // L.7 Plan B - direct API restore. Runs AFTER the existing
             // M.3 vt[0x1D]/vt[0x1C] chain so any items the chain managed to
