@@ -18,3 +18,5 @@ obj/
 # Lokale Konfiguration
 *.local.json
 .env
+# Local CMake presets (e.g. a VS 2022 preset, see BUILD.md)
+CMakeUserPresets.json

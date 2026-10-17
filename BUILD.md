@@ -15,6 +15,7 @@ your own lobby.
 ## Prerequisites
 
 - **Visual Studio 2026** with the C++ desktop workload (MSVC v14.4x, Windows SDK).
+  Visual Studio 2022 17.14 works too, see "Visual Studio 2022" below.
 - **CMake 3.30** or newer. Shipped with Visual Studio.
 - **vcpkg.** Dependencies are declared in `vcpkg.json` and restored in manifest
   mode. See the note below, it is the most common thing to get wrong.
@@ -52,6 +53,13 @@ git apply ../../patches/commonlibsf.patch
 cd ../..
 ```
 
+The submodule is pinned to CommonLibSF commit `0fdb49d` (2026-06-18), the
+revision the patch was written against. Up to 0.3.0 the repository had a
+`.gitmodules` entry but no recorded commit, so `--recurse-submodules` fetched
+nothing. If you cloned an older revision, check out `0fdb49d` in
+`extern/CommonLibSF` and run `git submodule update --init --recursive` inside it
+before applying the patch. A newer CommonLibSF revision may not take the patch.
+
 **Do not skip the patch step.** PULSAR needs two changes to CommonLibSF: two
 address IDs that upstream leaves at `0` although they resolve on 1.16.244, and
 an allocator swap in `BSTArray` that avoids a crash in the thread scrap heap.
@@ -83,6 +91,32 @@ names, raw RVAs, developer machine paths baked in through `__FILE__`, and
 internal feature phrases. Treat a failure there as a release blocker.
 
 Output lands in `build/vs/RelWithDebInfo/PULSAR.dll` or `build/vs/Release/PULSAR.dll`.
+
+### Visual Studio 2022
+
+The `vs` preset uses the VS 2026 generator. Visual Studio 2022 17.14 (MSVC
+14.44, bundled CMake 3.31) also builds the plugin. Rather than editing
+`CMakePresets.json`, add a `CMakeUserPresets.json` next to it:
+
+```json
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "vs2022",
+      "inherits": "vs",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/vs2022"
+    }
+  ]
+}
+```
+
+Then point `VCPKG_ROOT` at
+`C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg`, use
+`cmake --preset vs2022`, and build from `build/vs2022`. The first configure
+takes a while because vcpkg downloads its own CMake and builds every
+dependency.
 
 The `Release` target runs `verify_hardening.ps1` automatically as a post-build
 step. A successful run reports something like `verify_hardening OK: no leaks;
