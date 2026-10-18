@@ -16,10 +16,12 @@
                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                 <TextBlock Text="{Binding Version}" Opacity="0.7" />
                 <Separator Margin="0,6" />
-                <TextBlock Text="{Binding Author}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Author}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <SelectableTextBlock Text="{Binding OriginalUrl}" Opacity="0.85" />
+                <TextBlock Text="This fork:" Opacity="0.7" FontSize="12" />
                 <SelectableTextBlock Text="{Binding ProjectUrl}" Opacity="0.85" />
                 <Separator Margin="0,6" />
-                <TextBlock Text="PULSAR is free and always will be. It is open source under GPL-3.0; issues and pull requests are welcome."
+                <TextBlock Text="PULSAR Revived is free and always will be. It is open source under GPL-3.0; issues and pull requests are welcome."
                            Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
                 <Button Content="Project page (GitHub)"
                         HorizontalAlignment="Left"

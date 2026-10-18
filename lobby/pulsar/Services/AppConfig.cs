@@ -71,8 +71,11 @@ public sealed class AppConfig
     // These are the real release repos; they are still PRIVATE for now (the update
     // check returns nothing / 404 until they are flipped public + a release is cut,
     // which the checker handles silently). Overridable via Settings.
-    public string ToolRepo { get; set; } = "ramisotti13-eng/pulsar-tool";
-    public string ModRepo  { get; set; } = "ramisotti13-eng/pulsar-mod";
+    // PULSAR Revived publishes tool and mod from the fork's single repo (the
+    // original repos are unmaintained). The mod updater takes the release's first
+    // .zip; both packages contain mod/Data.
+    public string ToolRepo { get; set; } = "Pinganiyo/pulsar-tool";
+    public string ModRepo  { get; set; } = "Pinganiyo/pulsar-tool";
 
     // Legacy single-repo setting (pre tool/mod split). Kept ONLY so old configs still
     // deserialize; Load() migrates a non-empty value into ToolRepo, then clears it.

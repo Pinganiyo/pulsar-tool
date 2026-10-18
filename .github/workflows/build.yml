@@ -1,0 +1,66 @@
+# Build everything and run the game-free tests on every push and pull request.
+# Nothing here needs Starfield; in-game behaviour is still checked by hand
+# (docs/TESTING.md).
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\vcpkg-bincache
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Apply the CommonLibSF patch
+        shell: pwsh
+        run: |
+          Set-Location extern/CommonLibSF
+          git apply ../../patches/commonlibsf.patch
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Prepare the vcpkg binary cache folder
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-${{ runner.os }}-
+
+      - name: Configure
+        shell: pwsh
+        run: >
+          cmake -S . -B build/ci -G "Visual Studio 17 2022" -A x64
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          -DVCPKG_HOST_TRIPLET=x64-windows-static-md
+
+      - name: Build plugin, tests and fake peer (RelWithDebInfo)
+        run: cmake --build build/ci --config RelWithDebInfo --target PULSAR pulsar_tests pulsar_fakepeer -- /m
+
+      - name: Run tests
+        run: build\ci\tests\RelWithDebInfo\pulsar_tests.exe
+
+      - name: Build the hardened Release plugin (runs the leak check)
+        run: cmake --build build/ci --config Release --target PULSAR -- /m
+
+      - name: Build the tool and the companion
+        run: |
+          dotnet build lobby/pulsar/Pulsar.csproj -c Release
+          dotnet build lobby/companion/Companion.csproj -c Release
+
+      - name: Companion tests
+        run: dotnet test lobby/companion.tests/Companion.Tests.csproj -c Release

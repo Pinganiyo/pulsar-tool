@@ -47,33 +47,59 @@ milestone.
 
 ## Where we are
 
-**Current target: 0.3.1 (Stabilize).** Starting point: upstream Alpha 0.3.0.
+**Code version: 0.7.0. Verified in game: nothing yet.**
 
-Done:
+Versions 0.3.1 to 0.7.0 were developed without a two-player test setup. Every
+change builds, passes the automated tests (77 game-free tests plus the companion
+tests, run on every push by CI) and is listed with how it was checked in
+[CHANGELOG.md](CHANGELOG.md). But no roadmap goal counts as met until it has been
+played: the version numbers mark the code for each milestone, not a playable 0.7.0.
 
-- [x] Full build verified on a clean machine: `PULSAR.dll`, `Pulsar.exe`, `PulsarCompanion.exe`; companion tests pass (11/11).
-- [x] CommonLibSF submodule is now actually recorded (pinned to `0fdb49d`, the revision the patch applies to). Upstream only had a `.gitmodules` entry, so fresh clones could not build.
-- [x] Build guide covers Visual Studio 2022 as well as 2026.
-- [x] Tool: broader detection of the game folder and of the mod data in a dev checkout; the mod can be installed before SFSE is present (the SFSE check still flags it).
+**Next step: the first two-player session.** Both players install the same
+0.7.0 build, then run [docs/TESTING.md](docs/TESTING.md) scenarios A, B, D and F,
+in this order of importance:
 
-In progress:
+1. **Connect** (A): both on 0.7.0 connect; a different version is now refused
+   with a clear message in the log.
+2. **Your own character after regroups** (B): items and perks stay yours after
+   F8 (which now works on the client), fast travel and landing.
+3. **Space** (D, E): no drifting, normal gravity after stations, same stations
+   and POIs as the host. If they diverge, F8 on the client should regroup; then
+   try `AutoRegroupInSpace = 1`.
+4. **Reconnect** (F): drop and rejoin within 90 s; quests the host advanced
+   meanwhile should catch up.
+5. **Vehicle** (G): entering the host's vehicle is refused with a message
+   instead of crashing; try `SharedVehicleRide = carry`.
 
-- [ ] **Client profile after a mid-session regroup** (0.4.0 item, started early). Found one cause: when the local profile file was missing, the post-bridge restore was skipped entirely and the restore lock was left set for the session. Fixed in code, **not yet tested in game**.
-- [ ] **Space station / POI divergence.** Traced: short in-system cruises intentionally skip the host save resync (always resyncing crashed the client), so the client builds its own station and POI content. No fix yet; next step is detecting the divergence and triggering the existing F8 regroup automatically.
-- [ ] **Stuck gravity after a station / space transition.** No direct cause found yet. Fixed a related hazard: the space-flight sync kept pointers to ship physics bodies across save loads (which free them) and kept writing through them. They are now cleared on every save receipt. **Not yet tested in game.**
-- [ ] **HUD message per restored item.** The upstream code already adds restored items silently; this needs an in-game check to confirm whether the issue is gone (removals may still show messages).
-- [x] Two-player test checklist: [docs/TESTING.md](docs/TESTING.md).
-- [x] Automated tests that run without the game (`pulsar_tests.exe`, 36 tests: profile codec, encryption, relay protocol, packets, loopback networking). They found and fixed three bugs: names with quotes broke the character profile, a truncated profile was accepted as valid, and any 28-byte packet passed as an authentic encrypted message. See [docs/TESTING.md](docs/TESTING.md).
-- [x] Solo buddy for one-PC testing (F9): an AI teammate that follows you. Not a co-op test. **Not yet tested in game.**
-- [ ] First two-player test session on the supported configuration.
+Without a second PC: `pulsar_fakepeer.exe` plays a headless second player
+against your game, and F9 spawns an AI buddy (see docs/TESTING.md).
 
-Known issues are unchanged from upstream except where noted above; see
-[What does not work](#what-does-not-work) and [docs/OVERVIEW.md](docs/OVERVIEW.md).
+### Settings added in this fork (PULSAR.ini)
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `AutoRegroupInSpace` | `0` | Client asks for a regroup when out of sync with the host in space for 20 s (max 3 per session). |
+| `SharedVehicleRide` | `off` | `off`: entering the host's vehicle is refused (it crashes). `carry`: refused, but you ride along as a carried passenger. `enter`: old behaviour. |
+| `SyncCloneWeapons` | `1` | Show the partner's weapon on their clone. Set `0` if the game crashes when they draw or swap weapons. |
+| `HotkeyBuddy` | `F9` | Solo testing: toggle an AI teammate. |
+| `BuddyBaseFormID` | `0` | Buddy appearance: `0` = a copy of you, else a Starfield.esm NPC base ID. |
+
+### Still open
+
+- Host gear left as an unusable "ghost" item on the client (needs in-game work
+  on the game's inventory UI cache).
+- Explosion knockdowns ragdolling both players, clone flicker on cell changes,
+  ship hatch animations, door sync edge cases when the client leads.
+- Host-authoritative NPC firing (not built).
+- Everything in "Where we are" above that has not been played yet.
+
+Upstream's full known-issues list: [What does not work](#what-does-not-work) and
+[docs/OVERVIEW.md](docs/OVERVIEW.md).
 
 ## Changes in this fork
 
-Tracked in the git history from commit `e6002ef` onward. Everything up to and
-including `48f58d3` is the original PULSAR.
+See [CHANGELOG.md](CHANGELOG.md). Everything up to and including commit `48f58d3`
+is the original PULSAR 0.3.0.
 
 ---
 

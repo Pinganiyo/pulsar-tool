@@ -20,3 +20,7 @@ obj/
 .env
 # Local CMake presets (e.g. a VS 2022 preset, see BUILD.md)
 CMakeUserPresets.json
+
+# Release packaging output (tools/package_release.ps1)
+dist/
+lobby/_dist/

@@ -12,6 +12,33 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.7.0 - Release preparation
+
+This is the end of the unattended 0.3.1 -> 0.7.0 run. **None of 0.3.1-0.7.0 has
+been played yet.** The roadmap goal for 0.7.0 ("a two-player playthrough without
+major workarounds") can only be met by playing; see docs/TESTING.md for the
+checklist and README "Where we are" for what to verify first.
+
+- **The shipped DLL passes the leak check again.** The hardened Release build
+  refused the new tester-visible log lines (version refused, quest stages
+  replayed, automatic regroup, vehicle refused). They were added to the
+  allow-list on purpose; the build now reports 35 curated lines and no leaks.
+- **Packaging works in this repository.** `tools/package_release.ps1` looked for
+  the compiled scripts and the .ba2 archive in `scripts\` (they are in `data\`),
+  required the VS 2026 build folder and `cmake` on PATH, and needed `-EspPath`.
+  It now defaults to `data\PULSAR.esp`, finds `build\vs` or `build\vs2022` and
+  the VS-bundled CMake, and ships LICENSE-ADDITIONAL and this changelog.
+- **Named and credited as a modified version**, as LICENSE-ADDITIONAL requires:
+  packages are `PULSAR-Revived-*.zip`, the tool's window and About page say
+  "PULSAR Revived", "Modified version. Based on PULSAR by ramisotti13-eng", with
+  links to the original and to this fork.
+- **Tool update checks point at this fork** (`Pinganiyo/pulsar-tool`) instead of
+  the original, unmaintained repositories.
+- **Continuous integration:** `.github/workflows/build.yml` builds the plugin,
+  the tests and the tool on every push and pull request and runs
+  `pulsar_tests.exe` and the companion tests. *Not yet run: it starts on the
+  next push to GitHub.*
+
 ## 0.6.0 - Completeness
 
 - **Equipment sync is not "disabled", and weapons are now a setting.** The 0.3.0

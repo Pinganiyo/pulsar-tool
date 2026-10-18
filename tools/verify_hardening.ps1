@@ -70,7 +70,13 @@ $diagAllow = @(
     '[PULSAR] Connecting to',
     '[PULSAR] Failed to initiate connection',
     '[PULSAR] Client connected!',
-    '[PULSAR] crypto init failed'
+    '[PULSAR] crypto init failed',
+    # PULSAR Revived 0.3.1-0.5.0 - user-level co-op events a tester's log must show.
+    '[PULSAR] co-op: refused ''',                       # version mismatch (host side)
+    '[PULSAR] co-op: the host refused this connection', # version mismatch (client side)
+    '[PULSAR] co-op: replayed ',                        # quest stages missed while disconnected
+    '[PULSAR] co-op: out of sync with the host in space', # automatic regroup
+    '[PULSAR] co-op: refused entering the host''s vehicle' # SharedVehicleRide
 )
 
 $fail = $false

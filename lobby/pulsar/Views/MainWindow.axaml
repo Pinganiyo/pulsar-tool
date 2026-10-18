@@ -9,7 +9,7 @@
         x:DataType="vm:MainWindowViewModel"
         Width="900" Height="620"
         MinWidth="760" MinHeight="520"
-        Title="PULSAR"
+        Title="PULSAR Revived"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
 

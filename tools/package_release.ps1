@@ -15,12 +15,19 @@
        saves see no "missing content" warning; see the staging step).
 
   Usage:
-    .\tools\package_release.ps1 -EspPath "C:\path\to\PULSAR.esp" -Version 0.1.0
-    (-EspPath is the editable dev plugin; the build master-flags it into the shipped PULSAR.esp.)
+    .\tools\package_release.ps1 -Version 0.7.0
+    (-EspPath defaults to data\PULSAR.esp, the editable dev plugin; the build master-flags
+     it into the shipped PULSAR.esp. -BuildDir defaults to build\vs, else build\vs2022.)
+
+  PULSAR Revived: packages are named PULSAR-Revived-* (LICENSE-ADDITIONAL: a modified
+  version must not ship under the plain PULSAR name).
 #>
 param(
-    [Parameter(Mandatory = $true)][string]$EspPath,
+    [string]$EspPath = "",
     [string]$Version = "0.1.0",
+    [string]$BuildDir = "",
+    # cmake on PATH, else the one bundled with Visual Studio 2022.
+    [string]$CMake = "",
     # Local self-host stack: bundle the SpacetimeDB CLI (BSL 1.1 - redistribution granted,
     # one local instance per user) + the lobby module source so "Database: Local" works
     # from the ZIP. If the binary is absent, the tool falls back to the Settings path.
@@ -35,18 +42,29 @@ param(
 
 $ErrorActionPreference = "Stop"
 $root  = Split-Path -Parent $PSScriptRoot          # repo root
-$build = Join-Path $root "build\vs"
+if (-not $EspPath) { $EspPath = Join-Path $root "data\PULSAR.esp" }
+if (-not $BuildDir) {
+    $BuildDir = Join-Path $root "build\vs"
+    if (-not (Test-Path $BuildDir)) { $BuildDir = Join-Path $root "build\vs2022" }
+}
+if (-not $CMake) {
+    $CMake = (Get-Command cmake -ErrorAction SilentlyContinue).Source
+    if (-not $CMake) {
+        $CMake = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
+    }
+}
+$build = $BuildDir
 $dll   = Join-Path $build "Release\PULSAR.dll"
 $pdb   = Join-Path $build "Release\PULSAR.pdb"
 $tool  = Join-Path $root "lobby\_dist\Pulsar"
 $out   = Join-Path $root "dist"
-$stage = Join-Path $out  "PULSAR-Alpha-$Version"
+$stage = Join-Path $out  "PULSAR-Revived-$Version"
 
 function Fail($m) { Write-Host "FAIL: $m" -ForegroundColor Red; exit 1 }
 
 # --- 1. Build the hardened DLL ---
 Write-Host "[1/5] Building hardened Release DLL ..." -ForegroundColor Cyan
-cmake --build $build --config Release --target PULSAR | Out-Host
+& $CMake --build $build --config Release --target PULSAR | Out-Host
 if (-not (Test-Path $dll)) { Fail "hardened DLL not produced: $dll" }
 
 # --- 2. Assert hardening ---
@@ -74,8 +92,9 @@ Write-Host ("   PDB archived (private): {0}" -f (Join-Path $symDir "PULSAR-$Vers
 # --- 3. Check required inputs ---
 Write-Host "[3/5] Checking inputs ..." -ForegroundColor Cyan
 if (-not (Test-Path $EspPath)) { Fail "ESP not found: $EspPath  (pass -EspPath)" }
-$pex = Get-ChildItem (Join-Path $root "scripts") -Filter *.pex -ErrorAction SilentlyContinue
-if (-not $pex) { Fail "no .pex scripts found in scripts\" }
+# Compiled scripts live in data\Scripts (scripts\Source holds the .psc sources).
+$pex = Get-ChildItem (Join-Path $root "data\Scripts") -Filter *.pex -ErrorAction SilentlyContinue
+if (-not $pex) { Fail "no .pex scripts found in data\Scripts\" }
 if (-not (Test-Path (Join-Path $tool "Pulsar.exe")))          { Fail "tool not built: $tool\Pulsar.exe  (publish lobby\pulsar first)" }
 if (-not (Test-Path (Join-Path $tool "PulsarCompanion.exe"))) { Fail "daemon not built: $tool\PulsarCompanion.exe" }
 
@@ -111,7 +130,7 @@ Write-Host "   plugin shipped as master PULSAR.esp (ESM flag set; same filename,
 # loose (below); the archive is the robust path that loads even if loose-file invalidation is
 # not set. Co-op needs PulsarRemoteControl (spawns the remote player) - shipping was missing it
 # pre-0.1.2, so this is a hard requirement now.
-$ba2 = Join-Path $root "scripts\PULSAR - Main.ba2"
+$ba2 = Join-Path $root "data\PULSAR - Main.ba2"
 if (-not (Test-Path $ba2)) { Fail "missing script archive: $ba2  (engine auto-loads it for PULSAR.esp; required)" }
 Copy-Item $ba2 (Join-Path $modData "PULSAR - Main.ba2")
 Write-Host "   archive shipped: PULSAR - Main.ba2 (PulsarBridge + PulsarRemoteControl)" -ForegroundColor Green
@@ -124,9 +143,14 @@ Write-Host ("   loose scripts shipped: {0}" -f $pexNames) -ForegroundColor Green
 Copy-Item (Join-Path $tool "Pulsar.exe")          $stage
 Copy-Item (Join-Path $tool "PulsarCompanion.exe") $stage
 Copy-Item (Join-Path $root "LICENSE")             (Join-Path $stage "LICENSE.txt")
+Copy-Item (Join-Path $root "LICENSE-ADDITIONAL")  (Join-Path $stage "LICENSE-ADDITIONAL.txt")
+Copy-Item (Join-Path $root "CHANGELOG.md")        (Join-Path $stage "CHANGELOG.md")
 
 @"
-PULSAR Co-op for Starfield - Alpha $Version
+PULSAR Revived $Version - co-op for Starfield (modified version)
+Based on PULSAR by ramisotti13-eng - https://github.com/ramisotti13-eng/pulsar
+This fork: https://github.com/Pinganiyo/pulsar-tool  (see CHANGELOG.md: most fixes are
+not yet verified in game)
 
 1. Start Pulsar.exe.
 2. Open the Setup page and click "Install mod" (copies the mod into Starfield),
@@ -134,8 +158,9 @@ PULSAR Co-op for Starfield - Alpha $Version
 3. On the Co-op page: type your name, then Host a game (share the code) or Join with
    a friend's code. Starfield launches automatically.
 
-Needs: Starfield + SFSE installed. 2 players supported (3-4 is experimental - feedback
-welcome). See LICENSE.txt. Issues: https://github.com/ramisotti13-eng/pulsar
+Needs: Starfield 1.16.244 on Steam + SFSE. 2 players, both on the same PULSAR Revived
+version. See LICENSE.txt and LICENSE-ADDITIONAL.txt.
+Issues: https://github.com/Pinganiyo/pulsar-tool/issues
 "@ | Set-Content -Encoding UTF8 (Join-Path $stage "README.txt")
 
 # --- 4b. Bundle the local self-host stack (SpacetimeDB binary + lobby module source) ---
@@ -207,14 +232,14 @@ Write-Host "   clean (no secret-like strings in shippable text)" -ForegroundColo
 # --- 5. Zip ---
 Write-Host "[5/5] Zipping ..." -ForegroundColor Cyan
 # (a) Full TOOL package -> pulsar-tool release: exes + bundled mod/Data (one-click setup) + docs.
-$zip = Join-Path $out "PULSAR-Alpha-$Version.zip"
+$zip = Join-Path $out "PULSAR-Revived-$Version.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
 Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $zip
 Write-Host "DONE (tool): $zip" -ForegroundColor Green
 
 # (b) Slim MOD-ONLY zip -> pulsar-mod release: just mod/Data (DLL+ESP master+PEX), ~1-2 MB, so the
 # in-tool auto-update (ModUpdater.FindModData -> mod/Data) pulls the mod without the 160 MB tool.
-$modZip = Join-Path $out "PULSAR-Mod-$Version.zip"
+$modZip = Join-Path $out "PULSAR-Revived-Mod-$Version.zip"
 if (Test-Path $modZip) { Remove-Item $modZip -Force }
 Compress-Archive -Path (Join-Path $stage "mod") -DestinationPath $modZip
 Write-Host "DONE (mod):  $modZip" -ForegroundColor Green

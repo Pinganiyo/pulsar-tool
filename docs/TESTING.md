@@ -157,6 +157,9 @@ the clone looks right in game has to be checked by hand.
 - [ ] Client ends up next to the host.
 - [ ] Client has their own items, perks and powers, not the host's.
 - Logs: `RestoreClientState` once on the client; no `cache is EMPTY`.
+- [ ] Version check: with a different PULSAR build on the client, the host
+  logs `co-op: refused '...' - they run PULSAR ...` and the client logs which
+  version to install and does not keep reconnecting.
 
 ### B. Client profile across regroups (0.4.0)
 1. After A, note the client's inventory and perks.
