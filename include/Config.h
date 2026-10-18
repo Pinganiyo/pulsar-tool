@@ -90,6 +90,13 @@ namespace Pulsar
         // on demand. ini: AutoRegroupInSpace = 1
         bool        autoRegroupInSpace    = false;
 
+        // Client entering the vehicle the HOST is driving (VehicleSync/RidePolicy.h):
+        // 0 = off (default, entry refused with a message - formal entry crashes the
+        // client), 1 = carry (refused, but walking up boards you as a carried
+        // passenger; experimental), 2 = enter (old behaviour, known crash).
+        // ini: SharedVehicleRide = off | carry | enter
+        int         sharedVehicleRide     = 0;
+
         // co-op "no menu pause". The engine sets RE::Main::isGameMenuPaused
         // (Main+0x448) when a pausing menu opens; ~150 subsystem updates each zero their
         // frame delta when it is set, so ALL NPCs/timers freeze the moment one player

@@ -27,6 +27,8 @@
 
 #include "Network/NetworkHost.h"
 #include "Network/PacketTypes.h"
+#include "Config.h"
+#include "VehicleSync/RidePolicy.h"
 #include "NPCSync/PluginLookup.h"
 
 // L.7 forward decl from Main.cpp. Triggered when host's clone
@@ -947,12 +949,16 @@ namespace Pulsar::VehicleSync
     // when the host is driving and the client is near, board, then each commit
     // SetPosition the player onto the seat. The per-tick Havok body commit
     // carries them between updates. Game-thread only (RunClientTick).
-    static constexpr bool  kEnablePassenger = false;  // FALSE = client enters formally via E (test stability
-                                                      // under Guards #7/#8 entry + #9 combat + FindNode-guard).
-                                                      // TRUE = soft-carry fallback (no formal entry -> no crash cascade).
-    static constexpr float kBoardRadius     = 4.0f;   // board if client within this of vehicle (deliberate walk-up)
-    static constexpr float kSeatUp          = 1.0f;   // seat height above vehicle origin (tune)
-    static constexpr float kSeatLateral     = 0.6f;   // passenger seat lateral (inside open cabin, NOT at the wall)
+    // Enabled by SharedVehicleRide = carry (RidePolicy.h); off by default.
+    static bool CarryEnabled()
+    {
+        return Pulsar::GetConfig().sharedVehicleRide == static_cast<int>(RideMode::kCarry);
+    }
+    // Game units (~1.4 cm), not metres: these were 4 / 1 / 0.6 "m", which compared
+    // against REFR positions meant boarding only within ~6 cm of the vehicle origin.
+    static constexpr float kBoardRadius     = 280.0f; // ~4 m: board on a deliberate walk-up
+    static constexpr float kSeatUp          = 70.0f;  // ~1 m above the vehicle origin (tune)
+    static constexpr float kSeatLateral     = 42.0f;  // ~0.6 m to the side, inside the open cabin
     static bool s_passengerBoarded = false;
 
     static int SafeSetPlayerPos(RE::PlayerCharacter* p, float x, float y, float z)
@@ -968,7 +974,7 @@ namespace Pulsar::VehicleSync
 
     static void HandlePassenger(RE::TESObjectREFR* a_furn, float vx, float vy, float vz, float heading)
     {
-        if (!kEnablePassenger) return;
+        if (!CarryEnabled()) return;
         auto* p = RE::PlayerCharacter::GetSingleton();
         if (!p) return;
         auto pp = p->GetPosition();
@@ -977,7 +983,7 @@ namespace Pulsar::VehicleSync
         if (!s_passengerBoarded) {
             if (dist2 < kBoardRadius * kBoardRadius) {
                 s_passengerBoarded = true;
-                PLOG_INFO("[PULSAR] VehicleSync passenger: BOARDED (dist={:.1f}m)"sv,
+                PLOG_INFO("[PULSAR] VehicleSync passenger: BOARDED (dist={:.0f} units)"sv,
                           std::sqrt(dist2));
             } else {
                 return;
@@ -1986,5 +1992,61 @@ namespace Pulsar::VehicleSync
         PLOG_INFO(
             "[PULSAR] VehicleSync: Reset() - cleared {} cached clone/FURN entries"sv,
             n);
+    }
+
+    // ── Shared vehicle entry guard (SharedVehicleRide, RidePolicy.h) ──
+
+    static void NotifyHud(const char* a_msg)
+    {
+        auto* game = RE::GameVM::GetSingleton();
+        auto* vm = game ? game->GetVM() : nullptr;
+        if (!vm) return;
+        RE::BSScript::Variable msg;
+        RE::BSScript::PackVariable(msg, RE::BSFixedString(a_msg));
+        auto argFn = [&](RE::BSScrapArray<RE::BSScript::Variable>& args) -> bool {
+            args.resize(1);
+            args[0] = msg;
+            return true;
+        };
+        RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback;
+        vm->DispatchStaticCall(RE::BSFixedString("Debug"), RE::BSFixedString("Notification"),
+                               argFn, callback, 0);
+    }
+
+    bool ShouldBlockClientEntry(RE::TESObjectREFR* a_ref)
+    {
+        if (!a_ref) return false;
+        auto& net = Pulsar::Network::GetSingleton();
+        const bool isClient = net.IsConnected() && !net.IsHost();
+        if (!isClient) return false;
+        const auto mode = static_cast<RideMode>(Pulsar::GetConfig().sharedVehicleRide);
+        if (mode == RideMode::kEnter) return false;
+
+        HostVehicle host;
+        {
+            std::lock_guard lock(s_hostFurnMutex);
+            host.baseID       = s_hostFurn.resolvedBaseID;
+            host.x            = s_hostFurn.posX;
+            host.y            = s_hostFurn.posY;
+            host.z            = s_hostFurn.posZ;
+            host.lastUpdateMs = s_hostFurn.lastUpdateMs;
+        }
+        auto* base = a_ref->data.objectReference.get();
+        const std::uint32_t baseID = base ? base->formID : 0;
+        const auto& p = a_ref->data.location;
+        if (!ShouldBlockEntry(mode, true, baseID, p.x, p.y, p.z, host, GetTickCount64()))
+            return false;
+
+        static std::uint64_t s_lastMsgMs = 0;
+        const std::uint64_t now = GetTickCount64();
+        if (now - s_lastMsgMs > 5000) {
+            s_lastMsgMs = now;
+            PLOG_DIAG("[PULSAR] co-op: refused entering the host's vehicle (SharedVehicleRide = {})"sv,
+                      RideModeName(mode));
+            NotifyHud(mode == RideMode::kCarry
+                ? "PULSAR: stand next to the vehicle to ride along as a passenger"
+                : "PULSAR: riding the host's vehicle is disabled (known crash). Use your own vehicle.");
+        }
+        return true;
     }
 }

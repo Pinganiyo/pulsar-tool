@@ -41,4 +41,8 @@ namespace Pulsar::VehicleSync
     // RemotePlayerManager uses this to skip clone SetPosition so the
     // engine's sit-anchor (tying clone to FURN) isn't yanked each tick.
     bool IsCloneSeated(RE::Actor* a_clone);
+
+    // Client: refuse activating the vehicle the host is driving (formal entry
+    // crashes the client). Shows a message (rate-limited). See RidePolicy.h.
+    bool ShouldBlockClientEntry(RE::TESObjectREFR* a_ref);
 }

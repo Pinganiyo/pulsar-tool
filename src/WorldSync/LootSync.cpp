@@ -1,4 +1,5 @@
 #include "PCH.h"
+#include "VehicleSync/VehicleSync.h"
 #include "WorldSync/LootSync.h"
 #include "WorldSync/DoorSync.h"      // F.3: door-activation hand-off
 #include "WorldSync/LockSync.h"      // F.3.b: lock-state-flip hand-off
@@ -1639,6 +1640,13 @@ namespace {
         // skip the engine teleport (which crashes from null+0x4C deref on
         // an unloaded cockpit cell's destDoorRef).
         if (Pulsar::DockSync::TryHandleStationSideHatchActivate(self)) {
+            return false;
+        }
+
+        // Client walking into the vehicle the host is driving: formal entry
+        // crashes the client, so refuse it (SharedVehicleRide, RidePolicy.h).
+        if (args && args->activator == RE::PlayerCharacter::GetSingleton() &&
+            Pulsar::VehicleSync::ShouldBlockClientEntry(self)) {
             return false;
         }
 

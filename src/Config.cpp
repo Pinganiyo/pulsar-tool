@@ -1,5 +1,6 @@
 #include "PCH.h"
 #include "Config.h"
+#include "VehicleSync/RidePolicy.h"
 
 #include <fstream>
 #include <algorithm>
@@ -251,6 +252,12 @@ namespace Pulsar
                 std::transform(v.begin(), v.end(), v.begin(), ::tolower);
                 cfg.dbAuthoritative = (v == "1" || v == "true" || v == "yes" || v == "on");
                 PLOG_INFO("[PULSAR] Config: DbAuthoritative = {}"sv, cfg.dbAuthoritative);
+            }
+            else if (keyLower == "sharedvehicleride" || keyLower == "shared_vehicle_ride") {
+                const auto mode = Pulsar::VehicleSync::ParseRideMode(value);
+                cfg.sharedVehicleRide = static_cast<int>(mode);
+                PLOG_INFO("[PULSAR] Config: SharedVehicleRide = {}"sv,
+                          Pulsar::VehicleSync::RideModeName(mode));
             }
             else if (keyLower == "autoregroupinspace" || keyLower == "auto_regroup_in_space") {
                 std::string v = value;
