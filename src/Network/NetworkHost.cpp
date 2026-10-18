@@ -1273,7 +1273,8 @@ namespace Pulsar::Network
         // by calling native worker FUN_140D0E1F0 with echo-suppression flag.
         // Bidirectional: either side can be the originator. L.8 Phase 1.
         if (a_packet->dataLength >= 1 + sizeof(QuestStageData)
-            && a_packet->data[0] == PKT_QUEST_STAGE) {
+            && (a_packet->data[0] == PKT_QUEST_STAGE
+                || a_packet->data[0] == PKT_QUEST_STAGE_REPLAY)) {
             Pulsar::QuestSync::OnPacketReceived(a_packet->data, a_packet->dataLength);
             return;
         }
@@ -1668,8 +1669,12 @@ namespace Pulsar::Network
                             "reconnected mid-session; press F8 to force"sv,
                             nowMs - m_lastAutoBridgeMs);
                         NASLOG("D1 re-bridge skipped (reconnect debounce)");
+                        // No fresh save for this client: send it the quest stages
+                        // it missed while disconnected (0.5.0).
+                        Pulsar::QuestSync::ReplayMissedStagesToPeer();
                     } else {
                         m_lastAutoBridgeMs = nowMs;
+                        Pulsar::QuestSync::ForgetMissedStages();   // the save carries them
                         BeginHostQuicksaveTransfer();   // fresh save of current pos (was: stale SendSaveToClient)
                     }
                 }
@@ -1820,6 +1825,7 @@ namespace Pulsar::Network
 
         // Clear NPC-sync tracking so no stale state carries over to reconnect
         Pulsar::NPCSync::Reset();
+        Pulsar::QuestSync::NotePeerDisconnected();
         Pulsar::QuestSync::Reset();
         Pulsar::DialogSync::Reset();
 

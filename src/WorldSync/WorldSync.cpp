@@ -10,6 +10,7 @@
 #include "SpaceSync/FastTravelSync.h"
 #include "SpaceSync/FlightSync.h"
 #include "TransitSync/TransitSync.h"
+#include "QuestSync/QuestSync.h"
 #include "HookGuard.h"
 #include "InventorySync/InventorySync.h"
 #include "InventorySync/DirectRestore.h"
@@ -549,6 +550,7 @@ namespace Pulsar::WorldSync {
         // tick body-commit writes through.
         Pulsar::FlightSync::ResetBodyCache();
         Pulsar::TransitSync::NotifyBridged();   // automatic regroup watch: re-synced
+        Pulsar::QuestSync::ForgetMissedStages();  // the save carries the quest state
     }
 
     // ─── L.7 Pre-load snapshot implementation ────────────────────

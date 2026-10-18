@@ -4,6 +4,7 @@
 #include "Network/NetworkHost.h"
 #include "Network/PacketTypes.h"
 #include "EventTrace/EventTrace.h"
+#include "QuestSync/StageJournal.h"
 
 #include <REL/Relocation.h>
 #include <RE/T/TESForm.h>
@@ -89,6 +90,12 @@ namespace {
     static std::mutex                                s_lastSeenMutex;
     static std::unordered_map<std::uint32_t, std::uint16_t> s_lastSeenStage;
 
+    // 0.5.0 missed-stage replay: every local stage set, and when the peer
+    // last dropped (0 = no gap to replay). NOT cleared by Reset().
+    static std::mutex                 s_journalMutex;
+    static StageJournal               s_journal;
+    static std::atomic<std::uint64_t> s_gapStartMs{ 0 };
+
     // Raw +0x28 read for TESForm.formID - verified universal offset on
     // 1.16.236 (memory/reference_formid_offset.md). Avoids vt-call on a
     // potentially mid-mutation TESQuest from inside the hook body.
@@ -164,6 +171,10 @@ namespace {
         std::uint32_t formID = SafeRawFormID(quest);
         if (!formID) return result;
 
+        {
+            std::lock_guard g(s_journalMutex);
+            s_journal.Record(formID, stage, GetTickCount64());
+        }
         BroadcastStage(formID, stage);
         return result;
     }
@@ -387,11 +398,27 @@ void OnPacketReceived(const std::uint8_t* data, std::size_t length)
     if (!data || length < 1) return;
     const std::uint8_t pktType = data[0];
 
-    if (pktType == PKT_QUEST_STAGE) {
+    if (pktType == PKT_QUEST_STAGE || pktType == PKT_QUEST_STAGE_REPLAY) {
         if (length < 1 + sizeof(QuestStageData)) return;
 
         QuestStageData d{};
         std::memcpy(&d, data + 1, sizeof(d));
+
+        // A replayed stage the client already reached on its own during the gap
+        // would re-run that stage's scripts (duplicate rewards): skip it.
+        if (pktType == PKT_QUEST_STAGE_REPLAY) {
+            const std::uint64_t gap = s_gapStartMs.load(std::memory_order_acquire);
+            bool already = false;
+            {
+                std::lock_guard g(s_journalMutex);
+                already = gap != 0 && s_journal.ContainsSince(d.questFormID, d.stageID, gap);
+            }
+            if (already) {
+                PLOG_INFO("[PULSAR] QuestSync RX replay: quest=0x{:08X} stage={} already set here - skip"sv,
+                          d.questFormID, d.stageID);
+                return;
+            }
+        }
 
         PLOG_INFO(
             "[PULSAR] QuestSync RX: quest=0x{:08X} stage={}"sv,
@@ -516,6 +543,39 @@ void OnPacketReceived(const std::uint8_t* data, std::size_t length)
             d.questFormID, static_cast<int>(param2));
         return;
     }
+}
+
+void NotePeerDisconnected()
+{
+    std::uint64_t expected = 0;
+    s_gapStartMs.compare_exchange_strong(expected, GetTickCount64(), std::memory_order_acq_rel);
+}
+
+void ForgetMissedStages()
+{
+    s_gapStartMs.store(0, std::memory_order_release);
+}
+
+void ReplayMissedStagesToPeer()
+{
+    using namespace Pulsar::Network;
+    const std::uint64_t gap = s_gapStartMs.exchange(0, std::memory_order_acq_rel);
+    if (gap == 0) return;
+    std::vector<StageEntry> missed;
+    {
+        std::lock_guard g(s_journalMutex);
+        missed = s_journal.Since(gap);
+    }
+    auto& net = Pulsar::Network::GetSingleton();
+    for (const auto& e : missed) {
+        std::uint8_t buf[1 + sizeof(QuestStageData)]{};
+        buf[0] = PKT_QUEST_STAGE_REPLAY;
+        QuestStageData payload{ e.quest, e.stage };
+        std::memcpy(buf + 1, &payload, sizeof(payload));
+        net.Send(buf, sizeof(buf), /*reliable=*/true);
+    }
+    PLOG_DIAG("[PULSAR] co-op: replayed {} quest stage(s) set while the partner was disconnected"sv,
+              missed.size());
 }
 
 void Reset()

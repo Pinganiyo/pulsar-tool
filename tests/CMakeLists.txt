@@ -41,6 +41,7 @@ add_executable(
   test_divergence_watch.cpp
   test_profile_merge.cpp
   test_ride_policy.cpp
+  test_stage_journal.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp

@@ -29,4 +29,15 @@ namespace Pulsar::QuestSync {
     // doesn't suppress legitimate first-time stage broadcasts.
     void Reset();
 
+    // Missed-stage replay (0.5.0). The peer just disconnected: remember when, so
+    // stages set from now on can be replayed if it reconnects without a bridge.
+    void NotePeerDisconnected();
+
+    // Host: the peer reconnected and the save bridge was skipped (reconnect
+    // within 90 s) - send the stages set since it dropped (PKT_QUEST_STAGE_REPLAY).
+    void ReplayMissedStagesToPeer();
+
+    // A save bridge re-synced the worlds: nothing to replay.
+    void ForgetMissedStages();
+
 }  // namespace Pulsar::QuestSync
