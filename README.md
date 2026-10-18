@@ -63,6 +63,8 @@ In progress:
 - [ ] **Stuck gravity after a station / space transition.** No direct cause found yet. Fixed a related hazard: the space-flight sync kept pointers to ship physics bodies across save loads (which free them) and kept writing through them. They are now cleared on every save receipt. **Not yet tested in game.**
 - [ ] **HUD message per restored item.** The upstream code already adds restored items silently; this needs an in-game check to confirm whether the issue is gone (removals may still show messages).
 - [x] Two-player test checklist: [docs/TESTING.md](docs/TESTING.md).
+- [x] Automated tests that run without the game (`pulsar_tests.exe`, 36 tests: profile codec, encryption, relay protocol, packets, loopback networking). They found and fixed three bugs: names with quotes broke the character profile, a truncated profile was accepted as valid, and any 28-byte packet passed as an authentic encrypted message. See [docs/TESTING.md](docs/TESTING.md).
+- [x] Solo buddy for one-PC testing (F9): an AI teammate that follows you. Not a co-op test. **Not yet tested in game.**
 - [ ] First two-player test session on the supported configuration.
 
 Known issues are unchanged from upstream except where noted above; see

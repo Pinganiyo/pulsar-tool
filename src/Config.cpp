@@ -199,6 +199,20 @@ namespace Pulsar
                               value, cfg.hotkeyRestoreCharacter);
                 }
             }
+            else if (keyLower == "hotkeybuddy" || keyLower == "hotkey_buddy") {
+                int vk = ParseVKey(value);
+                if (vk > 0) {
+                    cfg.hotkeyBuddy = vk;
+                    PLOG_INFO("[PULSAR] Config: HotkeyBuddy = {} (VK 0x{:02X})"sv, value, vk);
+                } else {
+                    PLOG_WARN("[PULSAR] Config: HotkeyBuddy '{}' unparseable - keeping 0x{:02X}"sv,
+                              value, cfg.hotkeyBuddy);
+                }
+            }
+            else if (keyLower == "buddybaseformid" || keyLower == "buddy_base_formid") {
+                cfg.buddyBaseFormID = static_cast<std::uint32_t>(std::strtoul(value.c_str(), nullptr, 0));
+                PLOG_INFO("[PULSAR] Config: BuddyBaseFormID = 0x{:08X}"sv, cfg.buddyBaseFormID);
+            }
             else if (keyLower == "devhotkeys" || keyLower == "dev_hotkeys") {
                 std::string v = value;
                 std::transform(v.begin(), v.end(), v.begin(), ::tolower);

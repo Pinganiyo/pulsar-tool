@@ -51,6 +51,7 @@
 #include "CloneManager/CloneManager.h"
 #include "Profile/ClientProfile.h"
 #include "Lobby/LobbyHandoff.h"
+#include "Debug/Buddy.h"
 #include "Lobby/LobbyMenu.h"
 #include "UI/ImGuiOverlay.h"
 #include "NASLog.h"
@@ -1241,6 +1242,9 @@ static void OnSFSEMessage(SFSE::MessagingInterface::Message* a_msg)
                 Pulsar::TransitSync::TickFollowHotkey(g_config.hotkeyAutoFollow);
                 Pulsar::TransitSync::TickFollowApply();
                 Pulsar::SpaceSync::FastTravel::TickManualBridgeHotkey(g_config.hotkeyManualBridge);
+
+                // Solo testing aid: F9 toggles an AI teammate (refused while connected).
+                Pulsar::Buddy::Tick(g_config.hotkeyBuddy, g_config.buddyBaseFormID);
 
                 // Teil 1 profile - F10 = save loadout snapshot, F11 = restore it.
                 // (edge-triggered). Demo: F10, drop/sell items, F11 -> items return.

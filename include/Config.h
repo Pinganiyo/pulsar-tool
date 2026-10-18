@@ -36,6 +36,14 @@ namespace Pulsar
         int         hotkeySaveCharacter    = 0x79;  // VK_F10 - "save my character now"
         int         hotkeyRestoreCharacter = 0x7A;  // VK_F11 - "restore my character"
 
+        // Solo testing aid (Debug/Buddy.h): toggles an AI teammate that follows the
+        // player. Only works while no co-op peer is connected. Note F9 is also the
+        // dev diagnostic dump when devHotkeys = 1.
+        // ini: HotkeyBuddy = F9, BuddyBaseFormID = 0 (0 = a copy of the player,
+        // otherwise a Starfield.esm NPC base FormID in hex, e.g. 0x0001234A)
+        int           hotkeyBuddy     = 0x78;  // VK_F9
+        std::uint32_t buddyBaseFormID = 0;
+
         // Developer / diagnostic hotkeys. OFF by default for release: when devHotkeys
         // is false the dev hotkeys below are NOT polled (no collisions, no confusion
         // for normal players). The Pulsar tool exposes only the player hotkeys.

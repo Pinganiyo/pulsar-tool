@@ -27,6 +27,37 @@ what happened, and attach **both** players' logs
 (`Documents\My Games\Starfield\SFSE\Logs\PULSAR.log`). One scenario per log
 when you can.
 
+## Automated tests (no game needed)
+
+`pulsar_tests.exe` checks the parts of PULSAR that run without Starfield: the
+character profile codec, the encryption channel, the relay protocol, the packet
+table, and a loopback session (two ENet peers on 127.0.0.1 doing the real key
+exchange and sending encrypted packets). Run it after every change, before any
+in-game test:
+
+```
+cmake --build build/vs2022 --config RelWithDebInfo --target pulsar_tests
+build\vs2022\tests\RelWithDebInfo\pulsar_tests.exe
+```
+
+It prints one line per test and exits non-zero if anything fails. Pass part of a
+test name to run only those, e.g. `pulsar_tests.exe Crypto`. New tests go in
+`tests/`; code under test must not include game headers (the test build swaps
+`PCH.h` for `tests/stub/PCH.h`).
+
+## Solo buddy (one PC)
+
+Press **F9** in game (no co-op peer connected) to toggle an AI teammate that
+follows you and fights with you, driven by the game's own AI. By default it is a
+copy of your character; set `BuddyBaseFormID = 0x...` in `PULSAR.ini` to use a
+different Starfield.esm NPC. Use it to check things like combat, doors and
+cell changes with a second character around.
+
+It does **not** test co-op sync: the buddy is a local NPC, nothing about it goes
+over the network, and it is removed as soon as a peer connects. Real co-op
+scenarios below still need two PCs. In `PULSAR.log`, look for `Buddy:` lines;
+`dispatched=false` means the game rejected a script call.
+
 ## Scenarios
 
 ### A. Connect and join
