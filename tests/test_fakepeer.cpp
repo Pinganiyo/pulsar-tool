@@ -165,6 +165,10 @@ TEST(FakePeer, HandshakeSaveAndPositionsAgainstHost)
     CHECK(bot.SecureReady());
     CHECK_EQ(std::string(host.handshake.playerName), std::string("LoopBot"));
     CHECK_EQ(int(host.handshake.dlcFlags), 0x03);
+    // The real host (0.3.1+) refuses any other version (Network/VersionCompat.h).
+    CHECK_EQ(int(host.handshake.versionMajor), PULSAR_VERSION_MAJOR);
+    CHECK_EQ(int(host.handshake.versionMinor), PULSAR_VERSION_MINOR);
+    CHECK_EQ(int(host.handshake.versionPatch), PULSAR_VERSION_PATCH);
     CHECK_EQ(host.decryptFailures, 0);
 
     // The save arrives intact and the bot reports it "loaded".

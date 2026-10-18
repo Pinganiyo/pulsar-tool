@@ -22,6 +22,9 @@ function(pulsar_game_free_target a_target)
     NOMINMAX
     WIN32_LEAN_AND_MEAN
     "PULSAR_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\""
+    PULSAR_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+    PULSAR_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+    PULSAR_VERSION_PATCH=${PROJECT_VERSION_PATCH}
   )
   target_link_libraries(${a_target} PRIVATE unofficial::enet::enet bcrypt ws2_32 winmm)
 endfunction()
@@ -34,6 +37,7 @@ add_executable(
   test_relay_and_packets.cpp
   test_loopback.cpp
   test_fakepeer.cpp
+  test_version_compat.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp

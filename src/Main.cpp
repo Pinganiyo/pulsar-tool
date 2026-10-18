@@ -735,9 +735,10 @@ static void ClientSendHandshake()
     }
 
     Pulsar::Network::HandshakeData hs{};
-    hs.versionMajor = 0;
-    hs.versionMinor = 1;
-    hs.versionPatch = 0;
+    // The real plugin version: the host refuses a different one (Network/VersionCompat.h).
+    hs.versionMajor = static_cast<uint8_t>(Plugin::Version.major());
+    hs.versionMinor = static_cast<uint8_t>(Plugin::Version.minor());
+    hs.versionPatch = static_cast<uint8_t>(Plugin::Version.patch());
     hs.dlcFlags = 0x03;
     const char* name = g_config.playerName.empty() ? "Player2" : g_config.playerName.c_str();
     strncpy_s(hs.playerName, sizeof(hs.playerName), name, _TRUNCATE);

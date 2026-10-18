@@ -25,6 +25,8 @@
 #include "Lobby/LobbyHandoff.h"
 #include "TransitSync/TransitSync.h"
 #include "SpaceSync/FlightSync.h"
+#include "Network/VersionCompat.h"
+#include "Plugin.h"
 #include "SpaceSync/ShipCombatSync.h"
 #include "SpaceSync/SpaceSync.h"
 #include "SpaceSync/DockSync.h"
@@ -1618,6 +1620,21 @@ namespace Pulsar::Network
         case PKT_HANDSHAKE: {
             HandshakeData hs{};
             if (reader.Read(hs)) {
+                hs.playerName[sizeof(hs.playerName) - 1] = '\0';   // untrusted field
+                const Compat::Version localV{
+                    static_cast<std::uint8_t>(Plugin::Version.major()),
+                    static_cast<std::uint8_t>(Plugin::Version.minor()),
+                    static_cast<std::uint8_t>(Plugin::Version.patch()) };
+                const Compat::Version remoteV{ hs.versionMajor, hs.versionMinor, hs.versionPatch };
+                if (m_isHost && !Compat::IsCompatible(localV, remoteV)) {
+                    // Packet layouts differ between releases: playing on would desync
+                    // or crash. Refuse, and tell the client which version we run.
+                    PLOG_DIAG("[PULSAR] co-op: refused '{}' - they run PULSAR {}, this host runs {}. "
+                              "Both players need the same PULSAR version."sv,
+                              hs.playerName, Compat::DescribeRemote(remoteV), Compat::ToString(localV));
+                    if (m_peer) enet_peer_disconnect(m_peer, Compat::EncodeVersionReject(localV));
+                    break;
+                }
                 PLOG_INFO("[PULSAR] Handshake: {} v{}.{}.{} DLC:0x{:02X}"sv,
                     hs.playerName, hs.versionMajor, hs.versionMinor, hs.versionPatch, hs.dlcFlags);
                 NASLOG("Handshake: %s v%d.%d.%d", hs.playerName, hs.versionMajor, hs.versionMinor, hs.versionPatch);
@@ -1822,8 +1839,19 @@ namespace Pulsar::Network
             Companion::GetCompanionManager().RequestEnableAI();
         }
 
+        // Refused for a version mismatch: say what to install and do NOT retry,
+        // a reconnect would only be refused again every 3 s.
+        Compat::Version hostV;
+        const bool versionRejected = !m_isHost && Compat::DecodeVersionReject(a_reason, hostV);
+        if (versionRejected) {
+            PLOG_DIAG("[PULSAR] co-op: the host refused this connection - it runs PULSAR {}, "
+                      "you run {}.{}.{}. Install the same version as the host. Not reconnecting."sv,
+                      Compat::ToString(hostV), Plugin::Version.major(), Plugin::Version.minor(),
+                      Plugin::Version.patch());
+        }
+
         // Host stays listening - client can reconnect without restart
-        if (!m_isHost && !m_lastAddress.empty()) {
+        if (!m_isHost && !m_lastAddress.empty() && !versionRejected) {
             m_reconnectAt = GetTickCount64() + 3000;  // try reconnect in 3s
             PLOG_INFO("[PULSAR] Will auto-reconnect in 3s..."sv);
         }

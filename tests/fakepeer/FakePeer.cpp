@@ -180,9 +180,10 @@ namespace Pulsar::FakePeer
         if (m_opts.sendHandshake) {
             // Same fields as ClientSendHandshake() in Main.cpp.
             HandshakeData hs{};
-            hs.versionMajor = 0;
-            hs.versionMinor = 1;
-            hs.versionPatch = 0;
+            // The build's own version (CMake PROJECT_VERSION): the host refuses others.
+            hs.versionMajor = PULSAR_VERSION_MAJOR;
+            hs.versionMinor = PULSAR_VERSION_MINOR;
+            hs.versionPatch = PULSAR_VERSION_PATCH;
             hs.dlcFlags     = 0x03;
             strncpy_s(hs.playerName, sizeof(hs.playerName), m_opts.name.c_str(), _TRUNCATE);
             uint8_t buf[64]{};
