@@ -12,6 +12,27 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.5.0 - Gameplay
+
+- **Riding the host's vehicle no longer crashes the client - it is refused.**
+  Formally entering the vehicle the host is driving crashes the client. New
+  `SharedVehicleRide` setting in PULSAR.ini: `off` (default) refuses that entry
+  with an on-screen message; `carry` also refuses it but carries you as a
+  passenger when you walk up to the vehicle (experimental); `enter` keeps the
+  old behaviour. *Rules tested (6 tests); not tested in game.*
+- **Passenger carry could never board.** Its distances were written as metres
+  but compared with positions in game units (~1.4 cm), so you had to stand
+  within ~6 cm of the vehicle. Fixed. *Not tested in game.*
+- **Quest stages missed during a short disconnect are replayed.** A client that
+  reconnects within 90 s does not get a fresh save, and quest stages the host
+  set meanwhile were never sent, so the client's quests fell behind. The host
+  now replays them; the client skips stages it reached itself, so stage scripts
+  do not run twice. *Journal tested (4 tests); not tested in game.*
+
+Still open in this milestone, needing play sessions: verifying combat, deaths,
+revives, loot, inventory persistence, doors, containers, NPCs and cell
+transitions with two players.
+
 ## 0.4.0 - Core fixes
 
 - **F8 now works for the client.** It used to do nothing on the client (the
