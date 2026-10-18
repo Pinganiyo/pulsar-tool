@@ -12,6 +12,32 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.4.0 - Core fixes
+
+- **F8 now works for the client.** It used to do nothing on the client (the
+  handler returned for anyone but the host), although the README tells the
+  client to press it. It now asks the host to regroup the client. This is the
+  recovery for the space station / POI divergence and "stuck inside the ship".
+  *Not tested in game.*
+- **Optional automatic regroup in space** (`AutoRegroupInSpace = 1` in
+  PULSAR.ini, off by default). If the client is in space and its cell disagrees
+  with the host's for 20 s, it asks the host to regroup. Max 3 per session, 2 min
+  apart. Off by default because a false trigger reloads the save. *Trigger rules
+  tested (7 tests); not tested in game.*
+- **Auto-reconnect could stop for good.** If creating the network host failed
+  during a reconnect, no retry was ever scheduled. It now keeps the old host and
+  retries in 5 s. *Not tested in game.*
+- **Character gains merge is now tested.** The rule that decides which items a
+  client keeps from a session moved to its own file, unchanged, with 8 tests
+  (gains, losses, host items excluded, restore leftovers cancel, failed re-adds
+  kept). *Tested.*
+- Profile restore after a regroup and the space-flight physics fix from 0.3.1
+  are part of this milestone too. *Not tested in game.*
+
+Still open in this milestone: host gear left as an unusable "ghost" on the
+client (the remaining cause is the game's inventory UI cache and needs in-game
+reverse engineering), and confirming the gravity and POI fixes in game.
+
 ## 0.3.1 - Stabilize
 
 - **Version check on connect.** The client used to send a hard-coded 0.1.0 and

@@ -632,13 +632,13 @@ namespace Pulsar::Network
                 PLOG_INFO("[PULSAR] Auto-reconnecting to {}:{}..."sv, m_lastAddress, m_lastPort);
                 NASLOG("Auto-reconnecting...");
 
-                // Destroy old host and create fresh one
-                if (m_host) {
-                    enet_host_destroy(m_host);
-                    m_host = nullptr;
-                }
-                m_host = enet_host_create(nullptr, 1, NUM_CHANNELS, 0, 0);
-                if (m_host) {
+                // Create the fresh host BEFORE destroying the old one: if creation
+                // fails we keep the old host, so Update() (which returns early on a
+                // null m_host) keeps running and the retry below still fires.
+                ENetHost* fresh = enet_host_create(nullptr, 1, NUM_CHANNELS, 0, 0);
+                if (fresh) {
+                    if (m_host) enet_host_destroy(m_host);
+                    m_host = fresh;
                     ENetAddress address{};
                     enet_address_set_host(&address, m_lastAddress.c_str());
                     address.port = m_lastPort;
@@ -649,6 +649,9 @@ namespace Pulsar::Network
                         m_reconnectAt = GetTickCount64() + 5000;  // retry in 5s
                         PLOG_WARN("[PULSAR] Reconnect failed, retry in 5s"sv);
                     }
+                } else {
+                    m_reconnectAt = GetTickCount64() + 5000;
+                    PLOG_WARN("[PULSAR] Reconnect: could not create the network host, retry in 5s"sv);
                 }
             }
         }

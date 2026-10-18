@@ -4,7 +4,7 @@ message("Using toolchain file ${CMAKE_TOOLCHAIN_FILE}.")
 # ---- Project ----
 project(
   PULSAR
-  VERSION 0.3.1   # keep in sync with include/Plugin.h Version (drives version.rc file properties)
+  VERSION 0.4.0   # keep in sync with include/Plugin.h Version (drives version.rc file properties)
   DESCRIPTION "Co-op Mod for Starfield"
   LANGUAGES CXX
 )
