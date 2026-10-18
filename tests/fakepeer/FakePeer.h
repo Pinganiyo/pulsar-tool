@@ -37,8 +37,10 @@ namespace Pulsar::FakePeer
         bool        sendLoadComplete = true;   // PKT_CLIENT_LOAD_COMPLETE after the save arrives
         bool        sendTimeWeatherReq = true; // PKT_TIME_WEATHER_REQ once, like the real client
         Mode        mode   = Mode::kStand;
-        float       offset[3] = { 200.0f, 0.0f, 0.0f };   // from the anchor (game units)
-        float       radius   = 300.0f;         // circle mode
+        // Starfield positions are in metres (verified in game: interior coords
+        // in the tens, NPC walk/run thresholds 0.5 / 3.5 m/s).
+        float       offset[3] = { 2.0f, 0.0f, 0.0f };     // from the anchor, metres
+        float       radius   = 3.0f;           // circle mode, metres
         float       periodS  = 12.0f;          // circle mode: seconds per lap
         int         followDelayMs = 1000;      // follow mode
         int         rateHz   = 30;

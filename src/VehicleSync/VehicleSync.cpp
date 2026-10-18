@@ -954,11 +954,10 @@ namespace Pulsar::VehicleSync
     {
         return Pulsar::GetConfig().sharedVehicleRide == static_cast<int>(RideMode::kCarry);
     }
-    // Game units (~1.4 cm), not metres: these were 4 / 1 / 0.6 "m", which compared
-    // against REFR positions meant boarding only within ~6 cm of the vehicle origin.
-    static constexpr float kBoardRadius     = 280.0f; // ~4 m: board on a deliberate walk-up
-    static constexpr float kSeatUp          = 70.0f;  // ~1 m above the vehicle origin (tune)
-    static constexpr float kSeatLateral     = 42.0f;  // ~0.6 m to the side, inside the open cabin
+    // Metres (Starfield REFR positions are in metres).
+    static constexpr float kBoardRadius     = 4.0f;   // board on a deliberate walk-up
+    static constexpr float kSeatUp          = 1.0f;   // seat height above the vehicle origin (tune)
+    static constexpr float kSeatLateral     = 0.6f;   // to the side, inside the open cabin
     static bool s_passengerBoarded = false;
 
     static int SafeSetPlayerPos(RE::PlayerCharacter* p, float x, float y, float z)
@@ -983,7 +982,7 @@ namespace Pulsar::VehicleSync
         if (!s_passengerBoarded) {
             if (dist2 < kBoardRadius * kBoardRadius) {
                 s_passengerBoarded = true;
-                PLOG_INFO("[PULSAR] VehicleSync passenger: BOARDED (dist={:.0f} units)"sv,
+                PLOG_INFO("[PULSAR] VehicleSync passenger: BOARDED (dist={:.1f}m)"sv,
                           std::sqrt(dist2));
             } else {
                 return;

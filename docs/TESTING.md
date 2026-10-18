@@ -87,10 +87,10 @@ Run it:
 
 Modes (`--mode`):
 
-- `stand` (default): stand at `--offset` (default `200,0,0` game units) from
+- `stand` (default): stand at `--offset` (default `2,0,0`, in metres) from
   where the host was when the bot connected, turned toward the host. Walk
   around it to check the clone from all sides.
-- `circle`: walk a circle of `--radius` (300) around that point, one lap per
+- `circle`: walk a circle of `--radius` (3 m) around that point, one lap per
   `--period` seconds (12). Checks walk animation and turning.
 - `follow`: copy the host's own movement `--delay` ms (1000) late, shifted by
   `--offset`. Checks interpolation and how the clone keeps up.
@@ -128,8 +128,8 @@ Options:
 | `--no-e2e` | | Plaintext, only for a host with `E2EEncryption = 0` |
 | `--name S` | `FakePeer` | Name sent in the handshake |
 | `--mode M` | `stand` | `stand`, `circle` or `follow` |
-| `--offset X,Y,Z` | `200,0,0` | Offset from the anchor |
-| `--radius R`, `--period S` | `300`, `12` | Circle size and lap time |
+| `--offset X,Y,Z` | `2,0,0` | Offset from the anchor, metres |
+| `--radius R`, `--period S` | `3`, `12` | Circle radius (metres) and lap time |
 | `--delay MS` | `1000` | Follow lag |
 | `--rate HZ` | `30` | Position packets per second |
 | `--anchor X,Y,Z[,CELL]` | | Fixed anchor, CELL in hex |

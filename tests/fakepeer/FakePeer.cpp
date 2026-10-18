@@ -348,12 +348,12 @@ namespace Pulsar::FakePeer
         if (m_haveLast) {
             const float dx = x - m_lastXYZ[0], dy = y - m_lastXYZ[1];
             speed = std::sqrt(dx * dx + dy * dy) * static_cast<float>(m_opts.rateHz);
-            if (speed > 2000.0f) speed = 0.0f;   // teleport/re-anchor, not movement
+            if (speed > 30.0f) speed = 0.0f;     // m/s: teleport/re-anchor, not movement
         }
         m_lastXYZ[0] = x; m_lastXYZ[1] = y; m_lastXYZ[2] = z;
         m_haveLast = true;
 
-        const bool moving = speed > 5.0f;
+        const bool moving = speed > 0.3f;   // m/s (NPC walk starts at 0.5)
         a_out.x = x; a_out.y = y; a_out.z = z;
         a_out.rotZ = heading;
         a_out.speed = speed;

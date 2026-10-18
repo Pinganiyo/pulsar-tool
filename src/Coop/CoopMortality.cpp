@@ -43,7 +43,9 @@ namespace Pulsar::Coop::Mortality
     static constexpr float kDownedFloor = 25.0f;  // cosmetic HP floor while downed
 
     // Way A (medpack revive) tunables.
-    static constexpr float kReviveRadius = 250.0f;  // game units (~3 m) to the downed clone
+    // Metres. Was 250 ("game units ~3 m"), but Starfield positions are metres, so
+    // the revive key reached a downed partner up to 250 m away.
+    static constexpr float kReviveRadius = 3.0f;    // to the downed clone
     static constexpr int   kActivateVK   = 0x45;    // 'E' (tap; rebind/controller = polish)
 
     // Partner's downed state, mirrored from PKT_PLAYER_DOWNED. Written on the

@@ -22,10 +22,10 @@ namespace Pulsar::Buddy {
 
         constexpr std::uint64_t kFindTimeoutMs   = 10000;  // spawn is async on the VM
         constexpr std::uint64_t kFollowPeriodMs  = 2000;
-        // Game units (~1.4 cm each; CoopMortality's revive radius 250 = ~3 m).
-        constexpr float         kFollowStartDist = 450.0f;   // ~6 m
-        constexpr float         kTeleportDist    = 3000.0f;  // ~40 m
-        constexpr float         kCatchUpOffset   = 120.0f;   // ~1.7 m beside the player
+        // Metres: Starfield REFR positions are in metres (verified in game).
+        constexpr float         kFollowStartDist = 6.0f;
+        constexpr float         kTeleportDist    = 40.0f;
+        constexpr float         kCatchUpOffset   = 1.5f;     // beside the player
         constexpr std::uint32_t kBitTeammate     = 1u << 26;  // Actor boolBits (+0x208)
 
         enum class Phase { kOff, kSpawning, kActive };

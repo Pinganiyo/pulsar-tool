@@ -12,6 +12,27 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.7.1 - Distances are metres
+
+First in-game check (one PC, with the fake peer): the version check, encrypted
+connection, the 90 s reconnect rule and the clone spawn all worked. The clone was
+placed ~350 m away, which showed that **Starfield positions are in metres**, not
+the ~1.4 cm "game units" some code comments assume.
+
+- **Correction to 0.5.0:** the "passenger carry could never board" units fix was
+  wrong. The original 4 / 1 / 0.6 m values were right and are restored. Same for
+  the F9 buddy's follow distances (6 m / 40 m), which I had scaled up ~70x.
+- **Vehicle guard:** "the host's vehicle" is now within 20 m (was 1500).
+- **Fake peer:** stands 2 m from the host and circles at 3 m by default (was 200
+  and 300, i.e. hundreds of metres away); walk speed thresholds are in m/s.
+- **Revive range (original 0.3.0 code):** the revive key reached a downed partner
+  up to 250 m away (`kReviveRadius = 250`, commented "~3 m"). Now 3 m.
+  *Not tested in game.*
+- Other original constants with the same "game units" comment, to check in game:
+  cell-content probe match radius 500 ("~7 m"), dialogue "same scene" distance
+  6000 ("~60 m"), NPC door radius 3000 ("~30 m"). Left unchanged: they are
+  probably far too large, but changing them without play could break matching.
+
 ## 0.7.0 - Release preparation
 
 This is the end of the unattended 0.3.1 -> 0.7.0 run. **None of 0.3.1-0.7.0 has

@@ -183,7 +183,7 @@ TEST(FakePeer, HandshakeSaveAndPositionsAgainstHost)
     REQUIRE(Pump(host, bot, [&] { return host.positions >= 5; }));
     CHECK(bot.HasHostPosition());
     CHECK_EQ(host.lastPos.cellFormID, 0x0001ABCDu);   // echoes the host's cell
-    CHECK_EQ(host.lastPos.x, 1200.0f);                 // stand mode: anchor + default offset 200,0,0
+    CHECK_EQ(host.lastPos.x, 1002.0f);                 // stand mode: anchor + default offset 2,0,0 (metres)
     CHECK_EQ(host.lastPos.y, 2000.0f);
     CHECK_EQ(bot.GetStats().recvCount[PKT_POSITION], 1ull);
     CHECK_EQ(bot.GetStats().recvCount[PKT_SAVE_TRANSFER], 1ull);
@@ -201,7 +201,7 @@ TEST(FakePeer, CircleModeMovesAndAnimates)
     o.mode = Mode::kCircle;
     o.sendHandshake = false;
     o.offset[0] = 0.0f;
-    o.radius = 300.0f;
+    o.radius = 3.0f;
     o.periodS = 2.0f;
     FakePeer bot(o);
     REQUIRE(bot.Connect());
@@ -211,8 +211,8 @@ TEST(FakePeer, CircleModeMovesAndAnimates)
     host.SendPosition(0.0f, 0.0f, 10.0f, 0x00000123);
     REQUIRE(Pump(host, bot, [&] { return host.positions >= 10; }));
     const float r = std::sqrt(host.lastPos.x * host.lastPos.x + host.lastPos.y * host.lastPos.y);
-    CHECK(r > 299.0f && r < 301.0f);
-    CHECK(host.lastPos.speed > 100.0f);              // ~ 2*pi*300/2 = 942 units/s
+    CHECK(r > 2.99f && r < 3.01f);
+    CHECK(host.lastPos.speed > 5.0f);                // ~ 2*pi*3/2 = 9.4 m/s
     CHECK_EQ(host.lastPos.vars.iSyncIdleLocomotion, 1);
 }
 

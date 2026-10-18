@@ -43,8 +43,8 @@ namespace Pulsar::VehicleSync {
         std::uint64_t lastUpdateMs = 0;  // last PKT_VEHICLE_POS (0 = never)
     };
 
-    // Game units (~1.4 cm). Activation reach plus vehicle size, generously.
-    inline constexpr float         kSameVehicleRadius = 1500.0f;
+    // Metres. Activation reach plus vehicle size, generously.
+    inline constexpr float         kSameVehicleRadius = 20.0f;
     // PKT_VEHICLE_POS only flows while the host occupies the vehicle.
     inline constexpr std::uint64_t kHostInVehicleMs   = 2000;
 
