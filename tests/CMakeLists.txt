@@ -39,9 +39,11 @@ add_executable(
   test_fakepeer.cpp
   test_version_compat.cpp
   test_divergence_watch.cpp
+  test_profile_merge.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp
+  ${PROJECT_SOURCE_DIR}/src/Profile/ProfileMerge.cpp
   ${PROJECT_SOURCE_DIR}/src/Network/Crypto.cpp
 )
 pulsar_game_free_target(pulsar_tests)
