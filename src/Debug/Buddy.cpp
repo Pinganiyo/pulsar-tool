@@ -22,8 +22,10 @@ namespace Pulsar::Buddy {
 
         constexpr std::uint64_t kFindTimeoutMs   = 10000;  // spawn is async on the VM
         constexpr std::uint64_t kFollowPeriodMs  = 2000;
-        constexpr float         kFollowStartDist = 6.0f;   // metres
-        constexpr float         kTeleportDist    = 40.0f;
+        // Game units (~1.4 cm each; CoopMortality's revive radius 250 = ~3 m).
+        constexpr float         kFollowStartDist = 450.0f;   // ~6 m
+        constexpr float         kTeleportDist    = 3000.0f;  // ~40 m
+        constexpr float         kCatchUpOffset   = 120.0f;   // ~1.7 m beside the player
         constexpr std::uint32_t kBitTeammate     = 1u << 26;  // Actor boolBits (+0x208)
 
         enum class Phase { kOff, kSpawning, kActive };
@@ -277,7 +279,7 @@ namespace Pulsar::Buddy {
             if (!sameCell || dist > kTeleportDist) {
                 // MoveTo(akTarget, afXOffset, afYOffset, afZOffset, abMatchRotation)
                 const bool ok = CallMethod(vm, self, "MoveTo",
-                    { Arg(static_cast<RE::TESObjectREFR*>(playerObj)), Arg(1.5f), Arg(1.5f), Arg(0.0f), Arg(false) });
+                    { Arg(static_cast<RE::TESObjectREFR*>(playerObj)), Arg(kCatchUpOffset), Arg(kCatchUpOffset), Arg(0.0f), Arg(false) });
                 PLOG_INFO("[PULSAR] Buddy: catch-up MoveTo (sameCell={}, dist={:.1f}) dispatched={}"sv,
                           sameCell, dist, ok);
             } else if (dist > kFollowStartDist) {
