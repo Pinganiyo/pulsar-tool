@@ -171,6 +171,12 @@ namespace Pulsar
         // TRAIT_CND_HasHumanFollower see the partner (Coop/FollowerBonus.h).
         // ini: CoopPartnerCountsAsFollower = 0 (to disable).
         bool        coopPartnerCountsAsFollower = true;
+
+        // Client: in the host's world, set up the background-trait NPCs (temple
+        // keepers etc.) for THIS player's traits, which the host's TraitQuest
+        // cleared - e.g. Andy Singh for an Enlightened client with a Universal
+        // host (Coop/TraitAliases.h). ini: CoopTraitNpcsForPartner = 0 to disable.
+        bool        coopTraitNpcsForPartner = true;
         // tame combat-NPC movement (circle/dodge/avoid/strafe/flank) while
         // in a co-op session so the independently-run AIs on host + client don't
         // reposition differently → less NPC position divergence. Runtime GMST

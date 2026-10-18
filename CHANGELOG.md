@@ -12,6 +12,36 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.7.3 - Your own background traits work in your partner's world
+
+- **The joining player can use their own background traits' NPCs.** Decompiled
+  from the game: `TraitQuest` runs once per save and clears the quest alias of
+  every background NPC the save's owner does not need - for example Andy Singh
+  (House of the Enlightened chest) when the host is not "Raised Enlightened",
+  Keeper Aquilus (Sanctum Universum chest) when the host is not "Raised
+  Universal", plus Mirza (Serpent's Embrace), Madame Sauvage (Neon Street Rat),
+  Mayor Cartwright (Freestar settler) and Administrator Rookes (UC native). The
+  joining player is in the host's world, so their own trait NPC was missing:
+  an Enlightened friend could not get their chest next to a Universal host.
+  Now, once the joining player's own traits are restored, PULSAR re-fills the
+  alias their traits need when that NPC is nearby (`CoopTraitNpcsForPartner`,
+  on by default). The host's own setup is untouched.
+  - Each player keeps only their own traits after joining (that part already
+    worked: the restore replaces the host's perks with the client's).
+  - Dialogue sync only mirrors the lines; each player talks with their own
+    traits, so trait-gated lines show for whoever has the trait.
+  - *Rules tested (4 tests, a copy of the quest script's logic). In game: not
+    tested yet - see docs/TESTING.md scenario I.*
+- **About 1 in 256 network packets was silently thrown away (original 0.3.0
+  bug).** Encrypted packets start with a random 12-byte nonce, but the receiver
+  treated any packet whose first byte was 0xA1 as the key-exchange hello and
+  dropped it - including reliable packets ENet had already acknowledged, so they
+  were never resent: a loot pickup, a quest stage, a door, even the save
+  transfer could vanish. Found through a flaky fake-peer test (15% of runs).
+  The hello is now only accepted before the session key exists. *Regression
+  tested (an encrypted packet that starts with 0xA1 is decrypted, not dropped);
+  the fake-peer suite went from 6/40 failing runs to 0/40.*
+
 ## 0.7.2 - Your partner counts as a human follower
 
 - **Extrovert / Introvert now notice your co-op partner.** Read from

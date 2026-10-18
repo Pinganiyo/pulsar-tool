@@ -208,6 +208,17 @@ Works on one PC with the fake peer (`--mode stand` keeps the clone 2 m away).
 - [ ] Walk more than 40 m away or disconnect: the value goes back.
 - Logs: `PartnerFollower: PlayerFollowers_CountFollowing 0 -> 1.5 (partner near)`.
 
+### I. Different religion traits (Raised Universal / Raised Enlightened)
+Needs two players: host takes **Raised Universal**, client **Raised Enlightened**
+(or the reverse).
+1. Client joins. Check the client's Traits screen: only their own trait.
+2. Both go to New Atlantis. Client walks into the House of the Enlightened
+   (Andy Singh).
+- [ ] Client log: `TraitAliases: ForceRefTo Alias_AndySingh -> 0x... dispatched=true`.
+- [ ] Client can talk to Andy Singh about their upbringing and gets the chest.
+- [ ] Host still gets the Sanctum Universum chest from Keeper Aquilus.
+- If the log says `dispatched=false` or `not a ReferenceAlias`, send the log.
+
 ### G. Vehicle (known crash)
 Only when working on the vehicle fix: both enter the same ground vehicle.
 - [ ] No crash on entry. Otherwise attach the crash log and dump.

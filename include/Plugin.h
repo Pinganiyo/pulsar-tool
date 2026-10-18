@@ -13,6 +13,6 @@ namespace Plugin
     // cmake/CommonLibSF.cmake generates from PROJECT_VERSION. MUST be kept in
     // sync with project(VERSION ...) in CMakeLists.txt on every release bump.
     static constexpr auto Version{
-        REL::Version{ 0, 7, 2, 0 }
+        REL::Version{ 0, 7, 3, 0 }
     };
 }

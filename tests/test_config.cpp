@@ -32,6 +32,7 @@ TEST(Config, EmptyFileGivesTheDefaults)
     CHECK(c.syncCloneWeapons);
     CHECK(c.dbAuthoritative);
     CHECK(c.coopPartnerCountsAsFollower);
+    CHECK(c.coopTraitNpcsForPartner);
 }
 
 TEST(Config, NewSettingsAreRead)

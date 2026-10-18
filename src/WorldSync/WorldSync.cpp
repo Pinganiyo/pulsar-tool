@@ -12,6 +12,7 @@
 #include "TransitSync/TransitSync.h"
 #include "QuestSync/QuestSync.h"
 #include "Coop/PartnerFollower.h"
+#include "Coop/TraitAliasesGame.h"
 #include "HookGuard.h"
 #include "InventorySync/InventorySync.h"
 #include "InventorySync/DirectRestore.h"
@@ -553,6 +554,7 @@ namespace Pulsar::WorldSync {
         Pulsar::TransitSync::NotifyBridged();   // automatic regroup watch: re-synced
         Pulsar::QuestSync::ForgetMissedStages();  // the save carries the quest state
         Pulsar::Coop::PartnerFollower::OnSaveLoaded();  // follower count comes from the save
+        Pulsar::Coop::TraitAliases::OnSaveLoaded();     // host's world: trait aliases cleared again
     }
 
     // ─── L.7 Pre-load snapshot implementation ────────────────────

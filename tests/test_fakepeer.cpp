@@ -6,6 +6,7 @@
 #include "TestHarness.h"
 
 #include "fakepeer/FakePeer.h"
+#include "Network/KeyExchange.h"
 
 #include <chrono>
 #include <cmath>
@@ -74,7 +75,10 @@ namespace {
             uint8_t buf[128]{};
             PacketWriter w(PKT_POSITION, buf, sizeof(buf));
             w.Write(p);
-            Send(std::vector<uint8_t>(buf, buf + w.Size()), 0, false);
+            // Reliable here: the tests send ONE anchor position and wait for the
+            // bot to react; losing it made the test flaky. (The game streams
+            // positions at 30 Hz unreliably, where a lost packet does not matter.)
+            Send(std::vector<uint8_t>(buf, buf + w.Size()), 0, true);
         }
 
         void Service()
@@ -100,7 +104,7 @@ namespace {
 
         void OnReceive(const uint8_t* d, size_t n)
         {
-            if (n > 1 && d[0] == PKT_CRYPTO_HELLO) {
+            if (IsKeyExchangeHello(ready, d, n)) {
                 ready = crypto.DeriveFromPeer(d + 1, n - 1);
                 return;
             }
@@ -136,7 +140,12 @@ namespace {
             b.Tick();
             if (a_done()) return true;
         }
-        return a_done();
+        if (a_done()) return true;
+        std::printf("    Pump timeout: host.ready=%d peer=%p decryptFailures=%d positions=%d "
+                    "handshake=%d | bot secure=%d %s\n",
+                    h.ready, static_cast<void*>(h.peer), h.decryptFailures, h.positions,
+                    h.gotHandshake, b.SecureReady(), b.StatsLine().c_str());
+        return false;
     }
 
     Options BotOptions(uint16_t a_port)

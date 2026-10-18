@@ -26,6 +26,7 @@
 #include "TransitSync/TransitSync.h"
 #include "SpaceSync/FlightSync.h"
 #include "Network/VersionCompat.h"
+#include "Network/KeyExchange.h"
 #include "Plugin.h"
 #include "SpaceSync/ShipCombatSync.h"
 #include "SpaceSync/SpaceSync.h"
@@ -1092,7 +1093,11 @@ namespace Pulsar::Network
         // E2E: handle the key-exchange hello, then decrypt every other packet BEFORE
         // any code below reads data[0]. After decrypt we repoint a_packet at the plaintext
         // (the original packet is destroyed by the caller, not here).
-        if (a_packet && a_packet->dataLength >= 1 && a_packet->data[0] == PKT_CRYPTO_HELLO) {
+        // Only while the key is not agreed yet: encrypted packets start with a random
+        // nonce, and ~1 in 256 of them begin with the hello byte (KeyExchange.h).
+        bool sessionReady;
+        { std::lock_guard<std::mutex> qk(m_cryptoQueueMtx); sessionReady = m_cryptoReady; }
+        if (a_packet && IsKeyExchangeHello(m_e2e && sessionReady, a_packet->data, a_packet->dataLength)) {
             if (m_e2e && a_packet->dataLength > 1 &&
                 m_crypto.DeriveFromPeer(a_packet->data + 1, a_packet->dataLength - 1)) {
                 { std::lock_guard<std::mutex> qk(m_cryptoQueueMtx); m_cryptoReady = true; }

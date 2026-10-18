@@ -20,9 +20,9 @@
     <!-- Tool version used by the update checker (compared to the latest GitHub release).
          0.2.0 was a pre-release dev number; the public line is 0.1.x (first public release
          was 0.1.0). This is 0.1.1 (master-flagged PULSAR.esp + Plugins.txt load mechanism). -->
-    <Version>0.7.2</Version>
-    <AssemblyVersion>0.7.2.0</AssemblyVersion>
-    <FileVersion>0.7.2.0</FileVersion>
+    <Version>0.7.3</Version>
+    <AssemblyVersion>0.7.3.0</AssemblyVersion>
+    <FileVersion>0.7.3.0</FileVersion>
     <!-- AV reputation: a binary with NO FileDescription/Company looks anonymous and trips
          heuristics. Fill the version-resource fields. (Does not replace code signing, but
          removes the "blank publisher" smell.) -->
