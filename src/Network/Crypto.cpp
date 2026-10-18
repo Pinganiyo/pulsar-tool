@@ -199,9 +199,13 @@ namespace Pulsar::Network
 
         a_out.resize(ctLen);
         ULONG written = 0;
+        // Never pass a null output buffer: CNG treats that as a size query and returns
+        // success WITHOUT verifying the tag, so any 28-byte (empty-payload) packet
+        // would be accepted as authentic. Point at a dummy byte when ctLen == 0.
+        UCHAR dummy = 0;
         NTSTATUS st = BCryptDecrypt(static_cast<BCRYPT_KEY_HANDLE>(m_hAesKey),
                                     const_cast<PUCHAR>(ct), (ULONG)ctLen, &info,
-                                    nullptr, 0, ctLen ? a_out.data() : nullptr, (ULONG)ctLen, &written, 0);
+                                    nullptr, 0, ctLen ? a_out.data() : &dummy, (ULONG)ctLen, &written, 0);
         if (!Ok(st)) { a_out.clear(); return false; }   // STATUS_AUTH_TAG_MISMATCH on tamper
         a_out.resize(written);
         return true;

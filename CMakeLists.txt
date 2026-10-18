@@ -154,3 +154,10 @@ add_custom_command(
   VERBATIM
   COMMENT "Verifying release hardening (no leak strings)"
 )
+
+# ---- Tests (game-free, see tests/ and docs/TESTING.md) ----
+option(PULSAR_BUILD_TESTS "Build the pulsar_tests executable" ON)
+if(PULSAR_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
