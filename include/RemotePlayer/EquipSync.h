@@ -27,7 +27,11 @@ namespace Pulsar::RemotePlayer::EquipSync
     // bleedout anim - the gate-only builds (weapon OFF) blocked it; the weapon-ON
     // build played it. If both-on shows the bleedout, weapon sync was the enabler.
     inline constexpr bool kSyncArmor   = true;
-    inline constexpr bool kSyncWeapons = true;
+
+    // 0.6.0: weapon sync is a setting (SyncCloneWeapons, default ON = unchanged)
+    // so a tester hitting the clone anim-graph crash can turn it off without a
+    // rebuild. Gates both the send and the apply, like kSyncWeapons did.
+    bool SyncWeapons();
 
     // Game thread (Main.cpp tick, connected only) - collects the local
     // player's equipment, sends PKT_EQUIP_V2 on change / heartbeat.

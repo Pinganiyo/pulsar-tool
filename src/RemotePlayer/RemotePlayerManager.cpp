@@ -1674,7 +1674,7 @@ namespace Pulsar::RemotePlayer
         // flag so it doesn't pile up; just skip the apply when kSyncWeapons is false.
         if (m_remoteActor && !skipCloneGraphOps && equipSafe
             && m_pendingEquip.exchange(false)) {
-            if (EquipSync::kSyncWeapons) DoEquipWeapon();
+            if (EquipSync::SyncWeapons()) DoEquipWeapon();
         }
         // ARMOR equip-apply ON  - biped-slot visuals, graph-safe.
         if (EquipSync::kSyncArmor && m_remoteActor && !skipCloneGraphOps && equipSafe

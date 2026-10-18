@@ -1,4 +1,5 @@
 #include "PCH.h"
+#include "Config.h"
 #include "RemotePlayer/EquipSync.h"
 #include "RemotePlayer/RemotePlayerManager.h"
 #include "WorldSync/LootSync.h"
@@ -26,6 +27,8 @@ using namespace std::string_view_literals;
 
 namespace Pulsar::RemotePlayer::EquipSync
 {
+    bool SyncWeapons() { return Pulsar::GetConfig().syncCloneWeapons; }
+
     namespace
     {
         struct CollectedItem
@@ -78,7 +81,7 @@ namespace Pulsar::RemotePlayer::EquipSync
             [&](const RE::BGSInventoryItem& a_item) -> RE::BSContainer::ForEachResult {
                 if (a_item.object && items.size() < Network::kEquipV2MaxItems) {
                     const auto ft = a_item.object->GetFormType();
-                    if (kSyncWeapons && a_item.object->IsWeapon()) {
+                    if (SyncWeapons() && a_item.object->IsWeapon()) {
                         items.push_back({ a_item.object->GetFormID(), true, 0xFFFF, {} });
                     } else if (kSyncArmor && ft == RE::FormType::kARMO) {
                         items.push_back({ a_item.object->GetFormID(), false, 0xFFFF, {} });

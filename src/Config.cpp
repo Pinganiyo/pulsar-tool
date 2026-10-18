@@ -61,35 +61,11 @@ namespace Pulsar
         return -1;
     }
 
-    Config LoadConfig()
+    Config ParseConfig(std::istream& a_in)
     {
         Config cfg;
-
-        // Find INI next to the DLL
-        char modulePath[MAX_PATH]{};
-        HMODULE hModule = nullptr;
-        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-            reinterpret_cast<LPCSTR>(&LoadConfig), &hModule);
-        GetModuleFileNameA(hModule, modulePath, MAX_PATH);
-
-        std::string iniPath(modulePath);
-        auto pos = iniPath.rfind('\\');
-        if (pos != std::string::npos) {
-            iniPath = iniPath.substr(0, pos + 1);
-        }
-        iniPath += "PULSAR.ini";
-
-        std::ifstream file(iniPath);
-        if (!file.is_open()) {
-            PLOG_INFO("[PULSAR] No config file at {}, using defaults (Host mode)"sv, iniPath);
-            return cfg;
-        }
-
-        PLOG_INFO("[PULSAR] Loading config from {}"sv, iniPath);
-
         std::string line;
-        while (std::getline(file, line)) {
+        while (std::getline(a_in, line)) {
             line = Trim(line);
             if (line.empty() || line[0] == ';' || line[0] == '#' || line[0] == '[') {
                 continue;
@@ -253,6 +229,12 @@ namespace Pulsar
                 cfg.dbAuthoritative = (v == "1" || v == "true" || v == "yes" || v == "on");
                 PLOG_INFO("[PULSAR] Config: DbAuthoritative = {}"sv, cfg.dbAuthoritative);
             }
+            else if (keyLower == "synccloneweapons" || keyLower == "sync_clone_weapons") {
+                std::string v = value;
+                std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+                cfg.syncCloneWeapons = (v == "1" || v == "true" || v == "yes" || v == "on");
+                PLOG_INFO("[PULSAR] Config: SyncCloneWeapons = {}"sv, cfg.syncCloneWeapons);
+            }
             else if (keyLower == "sharedvehicleride" || keyLower == "shared_vehicle_ride") {
                 const auto mode = Pulsar::VehicleSync::ParseRideMode(value);
                 cfg.sharedVehicleRide = static_cast<int>(mode);
@@ -316,6 +298,36 @@ namespace Pulsar
         }
 
         return cfg;
+    }
+
+    Config LoadConfig()
+    {
+        Config cfg;
+
+        // Find INI next to the DLL
+        char modulePath[MAX_PATH]{};
+        HMODULE hModule = nullptr;
+        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCSTR>(&LoadConfig), &hModule);
+        GetModuleFileNameA(hModule, modulePath, MAX_PATH);
+
+        std::string iniPath(modulePath);
+        auto pos = iniPath.rfind('\\');
+        if (pos != std::string::npos) {
+            iniPath = iniPath.substr(0, pos + 1);
+        }
+        iniPath += "PULSAR.ini";
+
+        std::ifstream file(iniPath);
+        if (!file.is_open()) {
+            PLOG_INFO("[PULSAR] No config file at {}, using defaults (Host mode)"sv, iniPath);
+            return cfg;
+        }
+
+        PLOG_INFO("[PULSAR] Loading config from {}"sv, iniPath);
+
+        return ParseConfig(file);
     }
 
     std::string GetPluginDir()

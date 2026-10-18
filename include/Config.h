@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <istream>
 #include <string>
 
 namespace Pulsar
@@ -97,6 +98,12 @@ namespace Pulsar
         // ini: SharedVehicleRide = off | carry | enter
         int         sharedVehicleRide     = 0;
 
+        // Sync the partner's WEAPON onto their clone (armor always syncs). ON is the
+        // 0.3.0 behaviour; weapon equips on the clone were once linked to a clone
+        // anim-graph crash, so set 0 if the partner's clone crashes the game when
+        // they draw or swap weapons. ini: SyncCloneWeapons = 0
+        bool        syncCloneWeapons      = true;
+
         // co-op "no menu pause". The engine sets RE::Main::isGameMenuPaused
         // (Main+0x448) when a pausing menu opens; ~150 subsystem updates each zero their
         // frame delta when it is set, so ALL NPCs/timers freeze the moment one player
@@ -185,6 +192,9 @@ namespace Pulsar
 
     // Loads config from SFSE/Plugins/PULSAR.ini
     Config LoadConfig();
+
+    // The PULSAR.ini parser (LoadConfig = find the file + this). Unit-tested.
+    Config ParseConfig(std::istream& a_in);
 
     // Access the global config loaded once at plugin start (defined in Main.cpp).
     // Lets non-Main modules read hotkey/dev settings without re-reading the file.

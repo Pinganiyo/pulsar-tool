@@ -42,11 +42,13 @@ add_executable(
   test_profile_merge.cpp
   test_ride_policy.cpp
   test_stage_journal.cpp
+  test_config.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileMerge.cpp
   ${PROJECT_SOURCE_DIR}/src/Network/Crypto.cpp
+  ${PROJECT_SOURCE_DIR}/src/Config.cpp
 )
 pulsar_game_free_target(pulsar_tests)
 
@@ -55,6 +57,7 @@ add_executable(
   fakepeer/main.cpp
   fakepeer/FakePeer.cpp
   ${PROJECT_SOURCE_DIR}/src/Network/Crypto.cpp
+  ${PROJECT_SOURCE_DIR}/src/Config.cpp
 )
 pulsar_game_free_target(pulsar_fakepeer)
 
