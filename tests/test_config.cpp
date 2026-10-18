@@ -31,6 +31,7 @@ TEST(Config, EmptyFileGivesTheDefaults)
     CHECK_EQ(c.sharedVehicleRide, int(Pulsar::VehicleSync::RideMode::kOff));
     CHECK(c.syncCloneWeapons);
     CHECK(c.dbAuthoritative);
+    CHECK(c.coopPartnerCountsAsFollower);
 }
 
 TEST(Config, NewSettingsAreRead)
@@ -41,12 +42,14 @@ TEST(Config, NewSettingsAreRead)
         "SharedVehicleRide = carry\n"
         "SyncCloneWeapons = 0\n"
         "HotkeyBuddy = F6\n"
-        "BuddyBaseFormID = 0x0001234A\n");
+        "BuddyBaseFormID = 0x0001234A\n"
+        "CoopPartnerCountsAsFollower = 0\n");
     CHECK(c.autoRegroupInSpace);
     CHECK_EQ(c.sharedVehicleRide, int(Pulsar::VehicleSync::RideMode::kCarry));
     CHECK(!c.syncCloneWeapons);
     CHECK_EQ(c.hotkeyBuddy, 0x75);
     CHECK_EQ(c.buddyBaseFormID, 0x0001234Au);
+    CHECK(!c.coopPartnerCountsAsFollower);
 }
 
 TEST(Config, KeysAreCaseInsensitiveAndAcceptSnakeCase)

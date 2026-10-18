@@ -12,6 +12,22 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.7.2 - Your partner counts as a human follower
+
+- **Extrovert / Introvert now notice your co-op partner.** Read from
+  Starfield.esm: both traits switch on `TRAIT_CND_HasHumanFollower`, which is
+  "PlayerFollowers_CountFollowing >= 1, and >= 2 if Vasco is active". The
+  partner's clone is not a recruited follower, so before this Extrovert never
+  counted your friend and Introvert treated you as alone next to them. While
+  the partner is in the same area and within 40 m, PULSAR now raises that count
+  (`CoopPartnerCountsAsFollower`, on by default).
+  - The follower script (SQ_FollowersScript) owns the count and rewrites it with
+    whole numbers at any time, so PULSAR adds 1.5 instead of 1: a value ending
+    in .5 is always PULSAR's, so it never removes a real follower from the count,
+    and a leftover caught in a save is removed later. No other condition or
+    script in Starfield.esm reads this global.
+  - *Logic tested (7 tests). In game: not tested yet - see docs/TESTING.md.*
+
 ## 0.7.1 - Distances are metres
 
 First in-game check (one PC, with the fake peer): the version check, encrypted

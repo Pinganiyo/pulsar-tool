@@ -52,6 +52,7 @@
 #include "Profile/ClientProfile.h"
 #include "Lobby/LobbyHandoff.h"
 #include "Debug/Buddy.h"
+#include "Coop/PartnerFollower.h"
 #include "Lobby/LobbyMenu.h"
 #include "UI/ImGuiOverlay.h"
 #include "NASLog.h"
@@ -1243,6 +1244,7 @@ static void OnSFSEMessage(SFSE::MessagingInterface::Message* a_msg)
                 Pulsar::TransitSync::TickFollowHotkey(g_config.hotkeyAutoFollow);
                 Pulsar::TransitSync::TickFollowApply();
                 Pulsar::TransitSync::TickAutoRegroup(g_config.autoRegroupInSpace);
+                Pulsar::Coop::PartnerFollower::Tick(g_config.coopPartnerCountsAsFollower);
                 Pulsar::SpaceSync::FastTravel::TickManualBridgeHotkey(g_config.hotkeyManualBridge);
 
                 // Solo testing aid: F9 toggles an AI teammate (refused while connected).

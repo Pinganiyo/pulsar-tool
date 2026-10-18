@@ -80,6 +80,7 @@ against your game, and F9 spawns an AI buddy (see docs/TESTING.md).
 | --- | --- | --- |
 | `AutoRegroupInSpace` | `0` | Client asks for a regroup when out of sync with the host in space for 20 s (max 3 per session). |
 | `SharedVehicleRide` | `off` | `off`: entering the host's vehicle is refused (it crashes). `carry`: refused, but you ride along as a carried passenger. `enter`: old behaviour. |
+| `CoopPartnerCountsAsFollower` | `1` | Your partner counts as a human follower while near (same area, within 40 m), so Extrovert / Introvert react to them. |
 | `SyncCloneWeapons` | `1` | Show the partner's weapon on their clone. Set `0` if the game crashes when they draw or swap weapons. |
 | `HotkeyBuddy` | `F9` | Solo testing: toggle an AI teammate. |
 | `BuddyBaseFormID` | `0` | Buddy appearance: `0` = a copy of you, else a Starfield.esm NPC base ID. |

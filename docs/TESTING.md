@@ -196,6 +196,18 @@ the clone looks right in game has to be checked by hand.
 - [ ] Rejoin works without restarting the game.
 - [ ] Client's character is their own after rejoining.
 
+### H. Partner counts as a human follower (Extrovert / Introvert)
+Works on one PC with the fake peer (`--mode stand` keeps the clone 2 m away).
+1. Use a character with **Extrovert** (or Introvert) and no recruited follower.
+2. Before connecting: open the console and run
+   `GetGlobalValue PlayerFollowers_CountFollowing` (expect `0`, or `1` with Vasco).
+3. Connect the partner / fake peer next to you and run it again.
+- [ ] The value is 1.5 higher (`1.5`, or `2.5` with Vasco).
+- [ ] Extrovert: sprinting drains less oxygen than before connecting
+  (Introvert: more). The Effects screen shows the trait's effect switch.
+- [ ] Walk more than 40 m away or disconnect: the value goes back.
+- Logs: `PartnerFollower: PlayerFollowers_CountFollowing 0 -> 1.5 (partner near)`.
+
 ### G. Vehicle (known crash)
 Only when working on the vehicle fix: both enter the same ground vehicle.
 - [ ] No crash on entry. Otherwise attach the crash log and dump.

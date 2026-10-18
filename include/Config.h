@@ -165,6 +165,12 @@ namespace Pulsar
         // re-multiply. Dedup-guarded so both-shoot never double-counts.
         // ini: coopShareKillXp = 0 (to disable).
         bool        coopShareKillXp       = true;
+
+        // While the co-op partner is near (same cell, <= 40 m) the game counts one
+        // more human follower, so Extrovert / Introvert and anything else using
+        // TRAIT_CND_HasHumanFollower see the partner (Coop/FollowerBonus.h).
+        // ini: CoopPartnerCountsAsFollower = 0 (to disable).
+        bool        coopPartnerCountsAsFollower = true;
         // tame combat-NPC movement (circle/dodge/avoid/strafe/flank) while
         // in a co-op session so the independently-run AIs on host + client don't
         // reposition differently → less NPC position divergence. Runtime GMST

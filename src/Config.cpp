@@ -277,6 +277,14 @@ namespace Pulsar
                 cfg.coopPlanetFastTravelFollow = (v == "1" || v == "true" || v == "yes" || v == "on");
                 PLOG_INFO("[PULSAR] Config: CoopPlanetFastTravelFollow = {}"sv, cfg.coopPlanetFastTravelFollow);
             }
+            else if (keyLower == "cooppartnercountsasfollower" ||
+                     keyLower == "coop_partner_counts_as_follower") {
+                std::string v = value;
+                std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+                cfg.coopPartnerCountsAsFollower = (v == "1" || v == "true" || v == "yes" || v == "on");
+                PLOG_INFO("[PULSAR] Config: CoopPartnerCountsAsFollower = {}"sv,
+                          cfg.coopPartnerCountsAsFollower);
+            }
             else if (keyLower == "coopsharekillxp" || keyLower == "coop_share_kill_xp") {
                 std::string v = value;
                 std::transform(v.begin(), v.end(), v.begin(), ::tolower);

@@ -43,6 +43,7 @@ add_executable(
   test_ride_policy.cpp
   test_stage_journal.cpp
   test_config.cpp
+  test_follower_bonus.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp
