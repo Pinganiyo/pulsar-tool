@@ -12,6 +12,25 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.6.0 - Completeness
+
+- **Equipment sync is not "disabled", and weapons are now a setting.** The 0.3.0
+  notes say equipment sync is off; in the code, armor has synced onto the
+  partner's clone since June 2026, and weapons were switched back on in a later
+  experiment although weapon equips had been linked to a clone animation crash.
+  New `SyncCloneWeapons` setting (default on, same as before): set it to 0 if
+  the game crashes when your partner draws or swaps weapons. *Not tested in game.*
+- **PULSAR.ini parsing is tested.** Every setting testers are told to change goes
+  through it; 5 tests cover defaults, the new settings, key spellings, comments
+  and bad values. *Tested.*
+- Reviewed for long sessions: corpse-loot packets (sender caps at 24 items,
+  receiver checks every length) and growing per-NPC caches (bounded in practice,
+  a few MB at most). No change needed.
+
+Still open in this milestone, needing play sessions: whether weapon sync is
+stable, corpse loot sync in play, host-authoritative NPC firing (not built),
+and long sessions with progression across saves.
+
 ## 0.5.0 - Gameplay
 
 - **Riding the host's vehicle no longer crashes the client - it is refused.**
