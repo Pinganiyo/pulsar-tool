@@ -7,6 +7,7 @@
 #include "Network/NetworkHost.h"
 #include "Network/PacketTypes.h"
 #include "RemotePlayer/RemotePlayerManager.h"
+#include "Coop/DivergenceWatch.h"
 #include "NASLog.h"
 
 #include <RE/B/BSFixedString.h>
@@ -822,6 +823,47 @@ void TickFollowApply()
     // teleport + cell-streaming at the new coords. Same primitive that
     // already powers connect-time teleport in the client.
     SafeSetPlayerPos(player, x, y, z, rZ);
+}
+
+// ---- Client regroup requests (F8 + automatic space-divergence watch) ----
+
+namespace {
+    Pulsar::Coop::DivergenceWatch g_divergenceWatch;
+}
+
+void RequestHostBridgeFromClient(const char* a_why)
+{
+    RequestHostBridge(a_why);
+}
+
+void NotifyBridged()
+{
+    g_divergenceWatch.OnBridged(::GetTickCount64());
+}
+
+void TickAutoRegroup(bool a_enabled)
+{
+    auto& net = Pulsar::Network::GetSingleton();
+    if (!net.IsConnected() || net.IsHost()) {
+        g_divergenceWatch.ResetSession();   // next session starts with a fresh cap
+        return;
+    }
+    if (!a_enabled) return;
+
+    auto* player = RE::PlayerCharacter::GetSingleton();
+    if (!player) return;
+    const std::uint32_t localCell = player->parentCell ? player->parentCell->formID : 0;
+    const bool inSpace = player->IsInSpace(true);
+    auto& remote = Pulsar::RemotePlayer::GetRemotePlayerManager();
+    const std::uint64_t now = ::GetTickCount64();
+    if (g_divergenceWatch.Tick(now, inSpace, localCell, remote.GetRemoteCellID(),
+                               remote.GetRemoteCellAtMs())) {
+        PLOG_DIAG("[PULSAR] co-op: out of sync with the host in space for 20 s "
+                  "(local cell 0x{:08X}, host cell 0x{:08X}) - asking the host to regroup "
+                  "({} of 3 this session)"sv,
+                  localCell, remote.GetRemoteCellID(), g_divergenceWatch.Requests());
+        RequestHostBridge("auto regroup - space divergence");
+    }
 }
 
 }  // namespace Pulsar::TransitSync

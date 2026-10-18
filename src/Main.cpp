@@ -1242,6 +1242,7 @@ static void OnSFSEMessage(SFSE::MessagingInterface::Message* a_msg)
                 TickPostApplyMenuDump();
                 Pulsar::TransitSync::TickFollowHotkey(g_config.hotkeyAutoFollow);
                 Pulsar::TransitSync::TickFollowApply();
+                Pulsar::TransitSync::TickAutoRegroup(g_config.autoRegroupInSpace);
                 Pulsar::SpaceSync::FastTravel::TickManualBridgeHotkey(g_config.hotkeyManualBridge);
 
                 // Solo testing aid: F9 toggles an AI teammate (refused while connected).

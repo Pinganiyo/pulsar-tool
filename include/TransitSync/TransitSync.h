@@ -93,4 +93,14 @@ namespace Pulsar::TransitSync {
     // set, teleport the local player. Called from Main.cpp tick.
     void TickFollowApply();
 
+    // Client -> host "please regroup me" (PKT_BRIDGE_REQUEST), 20 s cooldown.
+    // Used by client F8 and by the automatic space-divergence watch.
+    void RequestHostBridgeFromClient(const char* a_why);
+
+    // Client game-thread tick of the automatic space regroup (Coop/DivergenceWatch.h).
+    void TickAutoRegroup(bool a_enabled);
+
+    // A save bridge just arrived (WorldSync::OnSaveReceived): worlds re-synced.
+    void NotifyBridged();
+
 }  // namespace Pulsar::TransitSync

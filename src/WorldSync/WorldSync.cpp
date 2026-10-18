@@ -9,6 +9,7 @@
 #include "SpaceSync/DockSync.h"
 #include "SpaceSync/FastTravelSync.h"
 #include "SpaceSync/FlightSync.h"
+#include "TransitSync/TransitSync.h"
 #include "HookGuard.h"
 #include "InventorySync/InventorySync.h"
 #include "InventorySync/DirectRestore.h"
@@ -547,6 +548,7 @@ namespace Pulsar::WorldSync {
         // Same for FlightSync's cached ship / NPC-ship Havok bodies, which the
         // tick body-commit writes through.
         Pulsar::FlightSync::ResetBodyCache();
+        Pulsar::TransitSync::NotifyBridged();   // automatic regroup watch: re-synced
     }
 
     // ─── L.7 Pre-load snapshot implementation ────────────────────

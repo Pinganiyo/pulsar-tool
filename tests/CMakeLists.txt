@@ -38,6 +38,7 @@ add_executable(
   test_loopback.cpp
   test_fakepeer.cpp
   test_version_compat.cpp
+  test_divergence_watch.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp

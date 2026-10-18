@@ -91,7 +91,9 @@ namespace Pulsar::RemotePlayer
         // can suppress applies that would push the clone into a different
         // cell than the local player (cross-cell clones cause engine
         // pingpong + 3D detach loops; verified 2026-04-27 logs).
-        void SetRemoteCellID(uint32_t a_cellID) { m_remoteCellID.store(a_cellID, std::memory_order_release); }
+        void SetRemoteCellID(uint32_t a_cellID);   // also stamps GetRemoteCellAtMs
+        // GetTickCount64() of the last SetRemoteCellID (0 = never).
+        uint64_t GetRemoteCellAtMs() const { return m_remoteCellAtMs.load(std::memory_order_acquire); }
         uint32_t GetRemoteCellID() const { return m_remoteCellID.load(std::memory_order_acquire); }
 
         bool IsSpawned() const { return m_spawned; }
@@ -167,6 +169,7 @@ namespace Pulsar::RemotePlayer
 
         // Phase I - remote player's parentCell formID (live).
         std::atomic<uint32_t> m_remoteCellID{ 0 };
+        std::atomic<uint64_t> m_remoteCellAtMs{ 0 };
 
         // Remote actor (found after Papyrus spawns it and writes FormID)
         RE::Actor* m_remoteActor = nullptr;

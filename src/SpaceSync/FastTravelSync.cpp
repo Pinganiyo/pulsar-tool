@@ -1,5 +1,6 @@
 #include "PCH.h"
 #include "SpaceSync/FastTravelSync.h"
+#include "TransitSync/TransitSync.h"
 
 #include "Cell3DAttach.h"
 #include "NASLog.h"
@@ -853,7 +854,19 @@ void TickManualBridgeHotkey(int a_vkey)
     return;
 #else
     auto& net = Pulsar::Network::GetSingleton();
-    if (!net.IsConnected() || !net.IsHost()) return;
+    if (!net.IsConnected()) return;
+
+    // Client: F8 asks the host to regroup us (PKT_BRIDGE_REQUEST). Before 0.4.0
+    // this function returned here for clients, so F8 did nothing on the client
+    // although the README tells the client to press it.
+    if (!net.IsHost()) {
+        static bool s_clientLastDown = false;
+        const bool down = (::GetAsyncKeyState(a_vkey) & 0x8000) != 0;
+        if (down && !s_clientLastDown)
+            Pulsar::TransitSync::RequestHostBridgeFromClient("F8 hotkey (client)");
+        s_clientLastDown = down;
+        return;
+    }
 
     // auto co-location: drain a queued client bridge-request (sent when
     // the client's AutoFollow had to SKIP across a proc/cross-worldspace

@@ -252,6 +252,12 @@ namespace Pulsar
                 cfg.dbAuthoritative = (v == "1" || v == "true" || v == "yes" || v == "on");
                 PLOG_INFO("[PULSAR] Config: DbAuthoritative = {}"sv, cfg.dbAuthoritative);
             }
+            else if (keyLower == "autoregroupinspace" || keyLower == "auto_regroup_in_space") {
+                std::string v = value;
+                std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+                cfg.autoRegroupInSpace = (v == "1" || v == "true" || v == "yes" || v == "on");
+                PLOG_INFO("[PULSAR] Config: AutoRegroupInSpace = {}"sv, cfg.autoRegroupInSpace);
+            }
             else if (keyLower == "coopnomenupause" || keyLower == "coop_no_menu_pause") {
                 std::string v = value;
                 std::transform(v.begin(), v.end(), v.begin(), ::tolower);

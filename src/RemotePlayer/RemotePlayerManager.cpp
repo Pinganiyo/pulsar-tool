@@ -47,6 +47,12 @@ namespace Pulsar::RemotePlayer
     // weapon-swap fix fwd-decl - defined near DoEquipWeapon, used in ProcessPending.
     static void SafeForceWeaponSheathedState(RE::Actor* a_actor) noexcept;
 
+    void RemotePlayerManager::SetRemoteCellID(uint32_t a_cellID)
+    {
+        m_remoteCellID.store(a_cellID, std::memory_order_release);
+        m_remoteCellAtMs.store(GetTickCount64(), std::memory_order_release);
+    }
+
     RemotePlayerManager& GetRemotePlayerManager()
     {
         return g_remotePlayerManager;

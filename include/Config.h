@@ -82,6 +82,14 @@ namespace Pulsar
         // ApplyProfileData keeps the empty-DB bootstrap correct.
         bool        dbAuthoritative       = true;
 
+        // Client: ask the host for a regroup (save bridge) automatically when, in
+        // space, this client's cell disagrees with the host's for 20 s (the
+        // "missing station / stuck inside the ship" divergence). Max 3 per session,
+        // 2 min apart (Coop/DivergenceWatch.h). OFF by default until verified in
+        // game: a false trigger reloads the save. F8 on the client does the same
+        // on demand. ini: AutoRegroupInSpace = 1
+        bool        autoRegroupInSpace    = false;
+
         // co-op "no menu pause". The engine sets RE::Main::isGameMenuPaused
         // (Main+0x448) when a pausing menu opens; ~150 subsystem updates each zero their
         // frame delta when it is set, so ALL NPCs/timers freeze the moment one player
