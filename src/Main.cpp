@@ -54,6 +54,7 @@
 #include "Debug/Buddy.h"
 #include "Coop/PartnerFollower.h"
 #include "Coop/TraitAliasesGame.h"
+#include "Animation/DirectionMap.h"
 #include "Lobby/LobbyMenu.h"
 #include "UI/ImGuiOverlay.h"
 #include "NASLog.h"
@@ -598,6 +599,34 @@ static void FillAnimationData(RE::Actor* a_actor, Pulsar::Network::PositionData&
         bool seatedDiag = (ReadPlayerFurnHandle(a_actor) != 0);
         PLOG_INFO("[PULSAR] FillAnim: spd={:.1f} dir={:.1f} as2weap={} relax={} snk={} seated={} pitch={:.3f}"sv,
             a_pos.speed, a_pos.direction, weaponState, relax, isSneaking, seatedDiag, foundPitch);
+    }
+
+    // 0.7.5 DirProbe: pair the player graph's "Direction" with the measured
+    // movement angle relative to facing, to learn the player graph's unit
+    // (fraction of a turn / degrees / radians) - see Animation/DirectionMap.h.
+    // Logged twice a second while clearly strafing / backing up, every 3 s
+    // while moving forward.
+    {
+        static float    s_prevX = 0.0f, s_prevY = 0.0f;
+        static uint64_t s_prevMs = 0, s_lastProbeLog = 0;
+        const uint64_t  nowMs = GetTickCount64();
+        if (s_prevMs != 0 && nowMs > s_prevMs) {
+            const float dx = a_pos.x - s_prevX, dy = a_pos.y - s_prevY;
+            const float dt = static_cast<float>(nowMs - s_prevMs) / 1000.0f;
+            const float groundSpeed = std::sqrt(dx * dx + dy * dy) / dt;
+            if (groundSpeed > 0.5f && groundSpeed < 30.0f) {
+                const float rel = Pulsar::Animation::RelativeMoveAngle(dx, dy, a_pos.rotZ);
+                const bool sideways = std::fabs(rel) > 0.35f;
+                if (nowMs - s_lastProbeLog > (sideways ? 500u : 3000u)) {
+                    s_lastProbeLog = nowMs;
+                    PLOG_INFO("[PULSAR] DirProbe: graphDirection={:.3f} moveRelFacing={:.3f} rad ({:.0f} deg) "
+                              "groundSpeed={:.2f} m/s graphSpeed={:.2f}"sv,
+                              a_pos.direction, rel, rel * 180.0f / Pulsar::Animation::kPi,
+                              groundSpeed, a_pos.speed);
+                }
+            }
+        }
+        s_prevX = a_pos.x; s_prevY = a_pos.y; s_prevMs = nowMs;
     }
 
     // Seated flag - bit 10. Non-zero occupiedFurniture handle = seated.

@@ -46,6 +46,7 @@ add_executable(
   test_follower_bonus.cpp
   test_trait_aliases.cpp
   test_key_exchange.cpp
+  test_direction_map.cpp
   fakepeer/FakePeer.cpp
   # Production sources under test (must stay free of game headers):
   ${PROJECT_SOURCE_DIR}/src/Profile/ProfileCodec.cpp

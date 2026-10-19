@@ -1,4 +1,5 @@
 #include "PCH.h"
+#include "Animation/DirectionMap.h"
 #include "NPCSync/LocomotionApply.h"
 #include "NPCSync/NPCSync.h"   // P1: MarkNpcAiBlocked (AI-block routing)
 
@@ -849,7 +850,11 @@ namespace Pulsar::NPCSync {
         SafeSetGraphFloatImpl(graphPtr, setFloatFn, &kSpeed,         effectiveSpeed);
         SafeSetGraphFloatImpl(graphPtr, setFloatFn, &kSpeedSampled,  effectiveSpeed);
         SafeSetGraphFloatImpl(graphPtr, setFloatFn, &kSpeedSmoothed, effectiveSpeed);
-        SafeSetGraphFloatImpl(graphPtr, setFloatFn, &kDirection,     effectiveDir);
+        // effectiveDir is radians (atan2(velocity) - yaw); the graph's Direction is a
+        // fraction of a turn in [0, 1) (Animation/DirectionMap.h). Writing radians
+        // raw put sideways NPCs at ~1.57 = outside the graph's range.
+        SafeSetGraphFloatImpl(graphPtr, setFloatFn, &kDirection,
+                              Pulsar::Animation::RadiansToDirection(effectiveDir));
 
         // GRAPH-DIAG finding (player reference): the always-animating local player
         // reads iSyncIdleLocomotion = 1 while MOVING (Speed 5-7.7) and 0 while

@@ -12,6 +12,27 @@ The roadmap goals in the README (for example "0.7.0: a two-player campaign
 without major workarounds") are only met once verified in game. A version
 number here means the code for that milestone is in, not that the goal is met.
 
+## 0.7.4 - Toward 0.7.5: clone animations
+
+New milestone 0.7.5: the partner's clone should play strafe and backwards
+animations instead of an NPC forward run (the original author's "anim-graph
+swap"). Findings and plan: docs/design/specs/2026-10-19-clone-animation-states.md.
+
+- **Found in the game's animation data:** players and NPCs share one graph
+  (`Human_Root.agx`). The difference is the state: the player runs in states
+  0-8 (HumanDefault, HumanSneak, ...), NPCs in 10-19 - and PULSAR has always put
+  the clone in the NPC states.
+- **New experiment `CloneUsePlayerStates`** (off by default): the clone gets the
+  host's own player state instead. *Not tested in game - docs/TESTING.md
+  scenario J, with the fake peer.*
+- **NPC movement direction fixed (original 0.3.0 bug).** The graph's
+  `Direction` is a fraction of a turn (0 forward, 0.5 backwards), but NPC sync
+  wrote radians into it, so sideways NPCs sent values outside the graph's range
+  ("stares one way and jogs"). Now converted. *Conversion tested (4 tests); not
+  tested in game.*
+- **`DirProbe` log lines** (dev build): your own `Direction` next to your real
+  movement angle, to check the above in game.
+
 ## 0.7.3 - Your own background traits work in your partner's world
 
 - **The joining player can use their own background traits' NPCs.** Decompiled

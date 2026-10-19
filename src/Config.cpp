@@ -277,6 +277,12 @@ namespace Pulsar
                 cfg.coopPlanetFastTravelFollow = (v == "1" || v == "true" || v == "yes" || v == "on");
                 PLOG_INFO("[PULSAR] Config: CoopPlanetFastTravelFollow = {}"sv, cfg.coopPlanetFastTravelFollow);
             }
+            else if (keyLower == "cloneuseplayerstates" || keyLower == "clone_use_player_states") {
+                std::string v = value;
+                std::transform(v.begin(), v.end(), v.begin(), ::tolower);
+                cfg.cloneUsePlayerStates = (v == "1" || v == "true" || v == "yes" || v == "on");
+                PLOG_INFO("[PULSAR] Config: CloneUsePlayerStates = {}"sv, cfg.cloneUsePlayerStates);
+            }
             else if (keyLower == "cooptraitnpcsforpartner" ||
                      keyLower == "coop_trait_npcs_for_partner") {
                 std::string v = value;

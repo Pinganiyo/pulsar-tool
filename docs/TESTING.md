@@ -219,6 +219,18 @@ Needs two players: host takes **Raised Universal**, client **Raised Enlightened*
 - [ ] Host still gets the Sanctum Universum chest from Keeper Aquilus.
 - If the log says `dispatched=false` or `not a ReferenceAlias`, send the log.
 
+### J. Clone animations in the player states (0.7.5 experiment)
+One PC, fake peer. In `PULSAR.ini` set `CloneUsePlayerStates = 1`, restart.
+1. Host a save, run `pulsar_fakepeer.exe --mode follow` (it replays your
+   animation state about 1 s later).
+2. Walk, run, strafe left/right, back up, sneak, draw and aim a weapon.
+- [ ] Strafing and backing up show strafe / backwards animations (with the
+  setting at 0 they show a forward run).
+- [ ] No T-pose, frozen pose or crash; weapon held correctly.
+- [ ] Compare with `CloneUsePlayerStates = 0`; note which looks better per move.
+- Logs: `DirProbe:` lines show your own `Direction` (0-1) per move.
+See docs/design/specs/2026-10-19-clone-animation-states.md.
+
 ### G. Vehicle (known crash)
 Only when working on the vehicle fix: both enter the same ground vehicle.
 - [ ] No crash on entry. Otherwise attach the crash log and dump.

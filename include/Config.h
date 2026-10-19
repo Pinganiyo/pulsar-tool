@@ -177,6 +177,13 @@ namespace Pulsar
         // cleared - e.g. Andy Singh for an Enlightened client with a Universal
         // host (Coop/TraitAliases.h). ini: CoopTraitNpcsForPartner = 0 to disable.
         bool        coopTraitNpcsForPartner = true;
+
+        // 0.7.5 (experimental, off): run the partner clone in the PLAYER locomotion
+        // states of Human_Root.agx (iState 0-8: HumanDefault, HumanSneak, ...)
+        // with the host's own iState, instead of the NPC states (10-19) it is
+        // mapped to today - the "animation graph swap" toward strafe / backwards
+        // animations. ini: CloneUsePlayerStates = 1
+        bool        cloneUsePlayerStates  = false;
         // tame combat-NPC movement (circle/dodge/avoid/strafe/flank) while
         // in a co-op session so the independently-run AIs on host + client don't
         // reposition differently → less NPC position divergence. Runtime GMST

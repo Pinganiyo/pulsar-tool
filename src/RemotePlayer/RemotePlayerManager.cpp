@@ -1,6 +1,7 @@
 #include "PCH.h"
 #include "RemotePlayer/RemotePlayerManager.h"
 #include "RemotePlayer/EquipSync.h"   // kSyncWeapons/kSyncArmor gates
+#include "Config.h"
 #include "Coop/CoopMortality.h"        // IsRemoteDowned() - gate equip-apply while downed
 #include "VehicleSync/VehicleSync.h"
 #include "FlashlightSync/FlashlightSync.h"
@@ -2991,6 +2992,17 @@ namespace Pulsar::RemotePlayer
                         int32_t npcIState = isSneaking ? 11 : (isWeaponReady ? 17 : 10);
                         int32_t npcRelax  = isSneaking ? 2 : (isWeaponReady ? 1 : 0);
 
+                        // 0.7.5 experiment (CloneUsePlayerStates): Human_Root.agx keeps the
+                        // player's locomotion states (HumanDefault 0, HumanSneak 1,
+                        // HumanSighted 2, ... iState 0-8) next to the NPC ones (NPCDefault
+                        // 10, ... 10-19). The mapping above forces the clone into the NPC
+                        // states; this hands it the host's own player iState instead.
+                        if (Pulsar::GetConfig().cloneUsePlayerStates &&
+                            v.iState >= 0 && v.iState <= 8) {
+                            npcIState = v.iState;
+                            npcRelax  = v.iSyncRelaxReadySneak;
+                        }
+
                         // Weapon aim pose:
                         // Ready (relax=1, iSyncSighted=0): weapon held up, combat walk, head tracks pitch
                         // Sighted (iSyncSighted=1): weapon aims, follows pitch for shooting
@@ -3088,6 +3100,7 @@ namespace Pulsar::RemotePlayer
                                           nLook("LookHeadingOffset");
                         ForceSetGraphFloatImpl(graph.get(), setFloatFn, &nSpeed, v.speed);
                         ForceSetGraphFloatImpl(graph.get(), setFloatFn, &nCurSpeed, v.speed);
+                        // Same unit on both sides (fraction of a turn, DirectionMap.h).
                         ForceSetGraphFloatImpl(graph.get(), setFloatFn, &nDir, v.direction);
                         ForceSetGraphFloatImpl(graph.get(), setFloatFn, &nTurn, v.turnDelta);
                         ForceSetGraphFloatImpl(graph.get(), setFloatFn, &nLook, v.lookHeading);

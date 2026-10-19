@@ -33,6 +33,7 @@ TEST(Config, EmptyFileGivesTheDefaults)
     CHECK(c.dbAuthoritative);
     CHECK(c.coopPartnerCountsAsFollower);
     CHECK(c.coopTraitNpcsForPartner);
+    CHECK(!c.cloneUsePlayerStates);
 }
 
 TEST(Config, NewSettingsAreRead)

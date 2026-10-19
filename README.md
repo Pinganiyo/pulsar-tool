@@ -43,6 +43,7 @@ milestone.
 | **0.5.0** | Gameplay | Fix the shared-vehicle crash, or disable shared riding with a clear warning. Verify combat, deaths, revives, loot, inventory, doors, containers, NPCs, quests and cell transitions. No soft-locks. |
 | **0.6.0** | Completeness | Revisit equipment sync and its animation-graph crash, corpse loot sync, host-authoritative NPC firing, long sessions and progression across saves. |
 | **0.7.0** | Playable | A defined, substantial campaign route completed by two players with no reproducible crash or progression-blocking bug. Remaining cosmetic issues documented. |
+| **0.7.5** | Clone animations | The partner's clone plays strafe, backwards and other player movement animations instead of an NPC forward run (the original author's "anim-graph swap"). Plan: [docs/design/specs/2026-10-19-clone-animation-states.md](docs/design/specs/2026-10-19-clone-animation-states.md). |
 | **1.0.0** | Stable | Reliable install/update/uninstall, connectivity, no known critical defects in the supported configuration, regression tests, a release process and a troubleshooting guide. |
 
 ## Where we are
@@ -82,6 +83,7 @@ against your game, and F9 spawns an AI buddy (see docs/TESTING.md).
 | `SharedVehicleRide` | `off` | `off`: entering the host's vehicle is refused (it crashes). `carry`: refused, but you ride along as a carried passenger. `enter`: old behaviour. |
 | `CoopPartnerCountsAsFollower` | `1` | Your partner counts as a human follower while near (same area, within 40 m), so Extrovert / Introvert react to them. |
 | `CoopTraitNpcsForPartner` | `1` | The joining player's background-trait NPCs (temple keepers for Raised Universal / Enlightened, and the others) are set up in the host's world. |
+| `CloneUsePlayerStates` | `0` | Experimental (toward 0.7.5): the partner's clone uses the player movement animations (strafe, backwards) instead of the NPC ones. Test it and report. |
 | `SyncCloneWeapons` | `1` | Show the partner's weapon on their clone. Set `0` if the game crashes when they draw or swap weapons. |
 | `HotkeyBuddy` | `F9` | Solo testing: toggle an AI teammate. |
 | `BuddyBaseFormID` | `0` | Buddy appearance: `0` = a copy of you, else a Starfield.esm NPC base ID. |
