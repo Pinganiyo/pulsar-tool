@@ -72,6 +72,11 @@ namespace {
             PositionData p{};
             p.x = x; p.y = y; p.z = z;
             p.cellFormID = cell;
+            SendPositionData(p);
+        }
+
+        void SendPositionData(const PositionData& p)
+        {
             uint8_t buf[128]{};
             PacketWriter w(PKT_POSITION, buf, sizeof(buf));
             w.Write(p);
@@ -223,6 +228,60 @@ TEST(FakePeer, CircleModeMovesAndAnimates)
     CHECK(r > 2.99f && r < 3.01f);
     CHECK(host.lastPos.speed > 5.0f);                // ~ 2*pi*3/2 = 9.4 m/s
     CHECK_EQ(host.lastPos.vars.iSyncIdleLocomotion, 1);
+
+    // Faces the way it moves (counter-clockwise tangent), heading = atan2(dx, dy).
+    const float a = std::atan2(host.lastPos.y, host.lastPos.x);
+    const float want = std::atan2(-std::sin(a), std::cos(a));
+    float diff = host.lastPos.rotZ - want;
+    while (diff > 3.14159265f) diff -= 6.28318531f;
+    while (diff < -3.14159265f) diff += 6.28318531f;
+    CHECK(std::fabs(diff) < 0.01f);
+    CHECK_EQ(host.lastPos.vars.direction, 0.0f);      // forward relative to facing
+}
+
+TEST(FakePeer, FollowModeReplaysTheHostsAnimationState)
+{
+    // Regression: follow mode used to send Direction = 0 ("forward") with the
+    // host's facing, so a strafing host became a clone running forward while
+    // sliding sideways. It must replay the host's own animation values.
+    EnetGuard g;
+    REQUIRE(g.ok);
+    MiniHost host;
+    const uint16_t port = host.Listen();
+    REQUIRE(port != 0);
+
+    Options o = BotOptions(port);
+    o.mode = Mode::kFollow;
+    o.sendHandshake = false;
+    o.followDelayMs = 0;
+    o.offset[0] = 1.0f; o.offset[1] = 0.0f; o.offset[2] = 0.0f;
+    FakePeer bot(o);
+    REQUIRE(bot.Connect());
+    REQUIRE(Pump(host, bot, [&] { return host.ready && bot.SecureReady(); }));
+
+    PositionData strafe{};
+    strafe.x = 10.0f; strafe.y = 20.0f; strafe.z = 1.0f;
+    strafe.rotZ = 1.25f;                              // facing
+    strafe.speed = 6.0f;
+    strafe.direction = 0.25f;                         // moving to the facing's right
+    strafe.animFlags = 0x0005;
+    strafe.vars.speed = 6.0f;
+    strafe.vars.direction = 0.25f;
+    strafe.vars.iSyncSprintState = 1;
+    strafe.vars.iSyncIdleLocomotion = 1;
+    strafe.cellFormID = 0x0001ABCD;
+    host.SendPositionData(strafe);
+
+    REQUIRE(Pump(host, bot, [&] { return host.positions >= 5; }));
+    CHECK_EQ(host.lastPos.x, 11.0f);                  // offset applied
+    CHECK_EQ(host.lastPos.y, 20.0f);
+    CHECK_EQ(host.lastPos.rotZ, 1.25f);
+    CHECK_EQ(host.lastPos.vars.direction, 0.25f);
+    CHECK_EQ(host.lastPos.direction, 0.25f);
+    CHECK_EQ(host.lastPos.vars.iSyncSprintState, 1);
+    CHECK_EQ(host.lastPos.vars.speed, 6.0f);
+    CHECK_EQ(int(host.lastPos.animFlags), 0x0005);
+    CHECK_EQ(host.lastPos.cellFormID, 0x0001ABCDu);
 }
 
 TEST(FakePeer, WrongSecretIsVisibleAsDecryptFailures)

@@ -308,6 +308,8 @@ namespace Pulsar::FakePeer
         }
 
         const float t = std::chrono::duration<float>(Clock::now() - m_start).count();
+        // Follow mode replays the host's own packet (see below); this is the one used.
+        const PositionData* replay = nullptr;
         float x = base[0] + m_opts.offset[0];
         float y = base[1] + m_opts.offset[1];
         float z = base[2] + m_opts.offset[2];
@@ -329,6 +331,7 @@ namespace Pulsar::FakePeer
                     if (!m_haveHostPos) return false;
                     x = m_hostLast.x + m_opts.offset[0]; y = m_hostLast.y + m_opts.offset[1];
                     z = m_hostLast.z + m_opts.offset[2]; heading = m_hostLast.rotZ;
+                    replay = &m_hostLast;
                     break;
                 }
                 const auto target = Clock::now() - std::chrono::milliseconds(m_opts.followDelayMs);
@@ -339,6 +342,7 @@ namespace Pulsar::FakePeer
                 z = s->pos.z + m_opts.offset[2];
                 heading = s->pos.rotZ;
                 cell = s->pos.cellFormID;
+                replay = &s->pos;
                 break;
             }
         }
@@ -352,6 +356,17 @@ namespace Pulsar::FakePeer
         }
         m_lastXYZ[0] = x; m_lastXYZ[1] = y; m_lastXYZ[2] = z;
         m_haveLast = true;
+
+        if (replay) {
+            // Replay the host's animation state too - Direction (movement relative
+            // to facing), stance, sprint, jump, weapon. Synthesising "forward"
+            // here made the clone run forward while sliding sideways whenever the
+            // host strafed or ran diagonally.
+            a_out = *replay;
+            a_out.x = x; a_out.y = y; a_out.z = z;
+            a_out.cellFormID = cell;
+            return true;
+        }
 
         const bool moving = speed > 0.3f;   // m/s (NPC walk starts at 0.5)
         a_out.x = x; a_out.y = y; a_out.z = z;
